@@ -1,14 +1,112 @@
 package com.example.service;
 
 import com.example.entity.OrderDetails;
+import com.example.entity.Product;
 import com.example.exception.OrderDetailsRepoException;
 import com.example.repository.OrderDetailsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
 @Service
 public class OrderDetailsServiceImpl {
+
+    @Autowired
+    private OrderDetailsRepo orderDetailsRepository;
+
+    @Autowired
+    private ProductServiceImpl productService;
+
+    public List<OrderDetails> getAllOrderDetails() {
+        return orderDetailsRepository.findAll();
+    }
+
+    public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {
+        return orderDetailsRepository.findById(orderNumber).orElse(null);
+    }
+
+    public OrderDetails createOrderDetails(OrderDetails orderDetails) {
+        Product product = productService.getProductById(orderDetails.getProductCode());
+        if (product != null && product.getQuantityInStock() >= orderDetails.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetails.getQuantityOrdered());
+            productService.updateProduct(product.getProductCode(), product);
+            return orderDetailsRepository.save(orderDetails);
+        }
+        return null;
+    }
+
+    public OrderDetails updateOrderDetails(Integer orderNumber, OrderDetails orderDetails) {
+        OrderDetails existingOrderDetails = getOrderDetailsByOrderNumber(orderNumber);
+        if (existingOrderDetails != null) {
+            existingOrderDetails.setProductCode(orderDetails.getProductCode());
+            existingOrderDetails.setQuantityOrdered(orderDetails.getQuantityOrdered());
+            existingOrderDetails.setPriceEach(orderDetails.getPriceEach());
+
+            Product product = productService.getProductById(orderDetails.getProductCode());
+            if (product != null && product.getQuantityInStock() >= orderDetails.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() + existingOrderDetails.getQuantityOrdered() - orderDetails.getQuantityOrdered());
+                productService.updateProduct(product.getProductCode(), product);
+                return orderDetailsRepository.save(existingOrderDetails);
+            } else {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public void deleteOrderDetails(Integer orderNumber) {
+        OrderDetails existingOrderDetails = getOrderDetailsByOrderNumber(orderNumber);
+        if (existingOrderDetails != null) {
+            Product product = productService.getProductById(existingOrderDetails.getProductCode());
+            product.setQuantityInStock(product.getQuantityInStock() + existingOrderDetails.getQuantityOrdered());
+            productService.updateProduct(product.getProductCode(), product);
+            orderDetailsRepository.deleteById(orderNumber);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*public class OrderDetailsServiceImpl {
 
     @Autowired
     private OrderDetailsRepo orderDetailsRepo;
@@ -60,4 +158,4 @@ public class OrderDetailsServiceImpl {
         }
         orderDetailsRepo.delete(orderDetails);;
     }
-}
+}*/

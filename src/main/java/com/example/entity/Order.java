@@ -1,74 +1,39 @@
 package com.example.entity;
 
+import com.example.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+
 import javax.persistence.*;
-
-import java.time.LocalDateTime;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
-
 
 @Entity
 @Table(name = "order_tbl")
+@Data
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer orderNumber;
-    private LocalDateTime orderDate;
+    @NotNull(message = "Order date cannot be null")
+    private Date orderDate;
+
     private Date shippedDate;
-    private String status;
+
+    @NotNull(message = "Status cannot be null")
+    private Status status;
+
+    @Size(max = 500, message = "Comments cannot be more than 500 characters")
     private String comments;
+
+    @NotNull(message = "Customer number cannot be null")
     private Integer customerNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", nullable = false)
     @JsonIgnore
     private Customer customer;
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
-    public Integer getOrderNumber() {
-        return orderNumber;
-    }
-    public void setOrderNumber(Integer orderNumber) {
-        this.orderNumber = orderNumber;
-    }
-    public LocalDateTime getOrderDate() {
-        return orderDate;
-    }
-    public void setOrderDate(LocalDateTime orderDate) {
-        this.orderDate = orderDate;
-    }
-    public Date getShippedDate() {
-        return shippedDate;
-    }
-    public void setShippedDate(Date shippedDate) {
-        this.shippedDate = shippedDate;
-    }
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    public String getComments() {
-        return comments;
-    }
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
-    public Integer getCustomerNumber() {
-        return customerNumber;
-    }
-    public void setCustomerNumber(Integer customerNumber) {
-        this.customerNumber = customerNumber;
-    }
-
 
 }
 

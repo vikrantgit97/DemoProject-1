@@ -9,15 +9,10 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductDto implements Serializable {
+public class OrderDetailsDto implements Serializable {
 
+    private Integer orderNumber;
     private Integer productCode;
-    private String productName;
-
-    private String productDescription;
-
-   // private Integer quantityInStock;
-
-    private Float price;
-
+    private Integer quantityOrdered;
+    private Double priceEach;
 }
