@@ -5,11 +5,13 @@ import com.example.repository.CustomerRepo;
 import com.github.javafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
-
+@Component
+@Order(2)
 public class CustomerRunner implements CommandLineRunner {
 
     @Autowired

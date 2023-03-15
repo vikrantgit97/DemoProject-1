@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
+@org.springframework.core.annotation.Order(6)
 @Component
 public class OrderDetailsRunner implements CommandLineRunner {
 
@@ -25,9 +26,7 @@ public class OrderDetailsRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Faker faker=new Faker(new Locale("en-IND"));
-
         for (int i = 0; i < 100; i++) {
-
             Customer customer = new Customer();
             customer.setCustomerFirstName(faker.name().firstName());
             customer.setCustomerLastName(faker.name().lastName());
@@ -43,13 +42,11 @@ public class OrderDetailsRunner implements CommandLineRunner {
             //orderDetails.setProductCode(faker.number().randomNumber());
             Product product = new Product();
             orderDetails.setProductCode(product.getProductCode());
-
             orderDetails.setQuantityOrdered(faker.number().numberBetween(1, 10));
-            orderDetails.setPriceEach(faker.number().randomDouble(2, 10, 100));
+            orderDetails.setPriceEach(faker.number().randomDouble(2, 101, 10001));
             Order order = new Order();
             orderDetails.setOrderNumber(order.getOrderNumber());
             orderDetailsRepo.save(orderDetails);
-
         }
     }
 }

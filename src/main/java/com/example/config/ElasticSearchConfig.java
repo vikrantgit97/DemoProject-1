@@ -14,10 +14,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 
-@Configuration
+//@Configuration
 public class ElasticSearchConfig {
 
-    @Value("${elasticsearch.host}")
+    /*@Value("${elasticsearch.host}")
     private String host;
 
     @Value("${elasticsearch.port}")
@@ -38,6 +38,6 @@ public class ElasticSearchConfig {
     @Bean
     public ElasticsearchOperations elasticsearchTemplate() {
         return new ElasticsearchRestTemplate(restHighLevelClient());
-    }
+    }*/
 }
 

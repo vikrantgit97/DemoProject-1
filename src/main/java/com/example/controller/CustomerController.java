@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -22,7 +23,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> getCustomerById(@PathVariable("id") Integer customerNumber) {
+    public ResponseEntity<Customer> getCustomerById( @PathVariable("id") Integer customerNumber) {
         Customer customer = customerService.getCustomerById(customerNumber);
         if (customer == null) {
             return ResponseEntity.notFound().build();
@@ -31,7 +32,7 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<Customer> addCustomer(@RequestBody Customer customer) {
+    public ResponseEntity<Customer> addCustomer(@Valid @RequestBody Customer customer) {
         Customer newCustomer = customerService.addCustomer(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCustomer);
     }

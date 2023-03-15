@@ -13,17 +13,18 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/product")
 public class ProductElasticsearchController {
-    @Autowired
+    /*@Autowired
     private ProductServiceElastic productService;
 
-    @GetMapping("")
+
+    @GetMapping("/getAll")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-    @GetMapping("/{productCode}")
+    @GetMapping("/getOne/{productCode}")
     public ResponseEntity<Product> getProductById(@PathVariable Integer productCode) {
         Optional<Product> product = productService.getProductById(productCode);
         if (product.isPresent()) {
@@ -31,6 +32,6 @@ public class ProductElasticsearchController {
         } else {
             return ResponseEntity.notFound().build();
         }
-    }
+    }*/
 
 }

@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+//@Service
 public class ProductServiceElastic {
 
-    @Autowired
-    private ProductRepoElastic productRepository;
+    //@Autowired
+    /*private ProductRepoElastic productRepository;
 
     public Optional<Product> getProductById(Integer productCode) {
         return productRepository.findById(productCode);
@@ -24,6 +24,6 @@ public class ProductServiceElastic {
         List<Product> products = new ArrayList<>();
         productRepository.findAll().forEach(products::add);
         return products;
-    }
+    }*/
 }
 

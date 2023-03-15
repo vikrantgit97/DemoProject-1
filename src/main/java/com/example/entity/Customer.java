@@ -26,7 +26,7 @@ public class Customer {
     @NotBlank(message = "Last name cannot be blank")
     private String customerLastName;
 
-    @Pattern(regexp="(^$|[0-9]{10})")
+   // @Pattern(regexp="(^$|[0-9]{10})")
     private Long phone;
 
     @NotBlank(message = "Address line 1 cannot be blank")
@@ -41,13 +41,13 @@ public class Customer {
     @NotBlank(message = "State cannot be blank")
     private String state;
 
-    @PostalCode(message = "Postal code cannot be null")
+    @PostalCode
     private Integer postalCode;
 
     @NotBlank(message = "Country cannot be blank")
     private String country;
 
-    @OneToMany(mappedBy = "customer" ,cascade = CascadeType.ALL)
-    private List<Order> order=new ArrayList<>();
+    /*@OneToMany(mappedBy = "customer" ,cascade = CascadeType.ALL)
+    private List<Order> order=new ArrayList<>();*/
 
 }

@@ -1,10 +1,9 @@
 package com.example.runner;
 
+import org.springframework.boot.CommandLineRunner;
+
 import com.example.dto.CustomerDto;
 import com.github.javafaker.Faker;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,6 +24,5 @@ public class CustomerDto implements Serializable {
     private Integer postalCode;
     private String country;
     private List<Order> order;
-
 
 }

@@ -2,7 +2,6 @@ package com.example.service;
 
 import com.example.entity.Customer;
 import com.example.entity.Order;
-import com.example.repository.CustomerRepo;
 import com.example.repository.OrderRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,8 +12,7 @@ import java.util.List;
 @Service
 public class OrderServiceImpl {
 
-    @Autowired
-    private OrderServiceImpl orderService;
+
     @Autowired
     private CustomerServiceImpl customerRepo;
     @Autowired
@@ -54,8 +52,9 @@ public class OrderServiceImpl {
     public void placeOrder(Order order) {
         Customer customer = customerRepo.getCustomerById(order.getCustomerNumber());
         // Set the customer object to the order
-        order.setCustomer(customer);
-        orderService.addOrder(order);
+        //order.setCustomer(customer);
+        order.setComments("required trimmer");
+        addOrder(order);
     }
 }
 

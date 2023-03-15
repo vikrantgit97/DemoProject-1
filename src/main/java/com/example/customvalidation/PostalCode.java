@@ -13,14 +13,12 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = PostalCodeValidator.class)
 public @interface PostalCode {
 
-    String message() default "Invalid postalCode entered";
+    String message() default "Invalid postalCode entered !!";
 
     Class<?>[] groups() default {
-
     };
 
     Class<? extends Payload>[] payload() default {
-
     };
 
 }

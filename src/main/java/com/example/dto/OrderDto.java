@@ -16,7 +16,7 @@ public class OrderDto implements Serializable {
 
     private LocalDateTime orderDate=LocalDateTime.now();
     private Date shippedDate;
-    //private Status status;
+    private Status status;
     private String comments;
     private Integer customerNumber;
     private Customer customer;

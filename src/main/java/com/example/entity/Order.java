@@ -3,6 +3,7 @@ package com.example.entity;
 import com.example.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer orderNumber;
     @NotNull(message = "Order date cannot be null")
+
     private Date orderDate;
 
     private Date shippedDate;
@@ -27,13 +29,13 @@ public class Order {
     @Size(max = 500, message = "Comments cannot be more than 500 characters")
     private String comments;
 
-    @NotNull(message = "Customer number cannot be null")
+    //@NotNull(message = "Customer number cannot be null")
     private Integer customerNumber;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    /*@ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", nullable = false)
     @JsonIgnore
-    private Customer customer;
+    private Customer customer;*/
 
 }
 
