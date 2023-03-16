@@ -18,7 +18,7 @@ public class Product {
     private String productName;
 
     //@Pattern(regexp="^[A-Za-z]*$",message = "Invalid Input")
-    @NotNull(message = "Invalid Input")
+    @NotBlank(message = "productDescription name cannot be blank")
     private String productDescription;
 
     @Min(value = 0, message = "Quantity in stock must be at least 0")

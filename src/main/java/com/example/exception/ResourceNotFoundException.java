@@ -29,3 +29,34 @@ public class ResourceNotFoundException extends RuntimeException {
         return fieldValue;
     }
 }
+
+/*public class MyCustomException extends RuntimeException {
+    private int errorCode;
+
+    public MyCustomException(String message, int errorCode) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
+
+    public void myServiceMethod() {
+    // ...
+    if (someCondition) {
+        throw new MyCustomException("My custom error message", 1001);
+    }
+    // ...
+}
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(MyCustomException.class)
+    public ResponseEntity<ErrorResponse> handleMyCustomException(MyCustomException e) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), e.getErrorCode());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+}
+
+}*/

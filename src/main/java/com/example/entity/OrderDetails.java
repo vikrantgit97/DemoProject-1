@@ -16,7 +16,6 @@ public class OrderDetails {
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Integer orderNumber;
 
-
     private Integer productCode;
 
     @Min(value = 1, message = "Quantity ordered must be at least 1")

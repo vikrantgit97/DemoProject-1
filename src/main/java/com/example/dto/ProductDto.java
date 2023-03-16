@@ -16,7 +16,7 @@ public class ProductDto implements Serializable {
 
     private String productDescription;
 
-   private Integer quantityInStock;
+    private Integer quantityInStock;
 
     private Float price;
 

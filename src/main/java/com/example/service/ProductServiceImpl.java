@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.dto.ProductDto;
 import com.example.entity.Product;
 import com.example.exception.ResourceNotFoundException;
 import com.example.repository.ProductRepo;
@@ -8,10 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class ProductServiceImpl {
@@ -50,8 +47,9 @@ public class ProductServiceImpl {
     public Product incrementDecrement(Integer productCode, Double amount) {
         Product existingProduct = getProductById(productCode);
         if (existingProduct != null) {
-            Double newPrice = existingProduct.getPrice() + amount;
-            existingProduct.setPrice(newPrice);
+            Double increaseDecrease = existingProduct.getPrice() + amount;
+            //Double newPrice =  amount;        //to set new price
+            existingProduct.setPrice(increaseDecrease);
             return productRepository.save(existingProduct);
         }
         return null;
@@ -73,6 +71,59 @@ public class ProductServiceImpl {
         });
         return productRepository.save(product);
     }
+
+    public List<Product> getByName(String productName) {
+        return productRepository.findByProductName(productName);
+    }
+
+    public List<Product> getByProductNamePrefix(String prefixn) {
+        return productRepository.findByProductNameStartingWith(prefixn);
+    }
+
+    public List<Product> getByProductNameWord(String prefix) {
+        return productRepository.findByProductNameContaining(prefix);
+    }
+
+    public List<Product> sortByProductNameAsc() {
+        return productRepository.findAllByOrderByProductNameAsc();
+    }
+
+    public List<Product> sortByProductNameDsc() {
+        return productRepository.findAllByOrderByProductNameDesc();
+    }
+
+    public List<Product> searchBy(String theName) {
+
+        List<Product> results = null;
+
+        if (theName != null && (theName.trim().length() > 0)) {
+            results = productRepository.findByProductNameContainsAllIgnoreCase(theName);
+        } else {
+            results = sortByProductNameAsc();
+        }
+        return results;
+    }
+
+
+    /*// method to increment quantityInStock by a given amount
+    default void incrementQuantityInStock(Integer productCode, Integer quantity) {
+        ProductDto product = findById(productCode).orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
+        product.setQuantityInStock(product.getQuantityInStock() + quantity);
+        save(product);
+    }
+
+    // method to decrement quantityInStock by a given amount
+    default void decrementQuantityInStock(Integer productCode, Integer quantity) {
+        ProductDto product = findById(productCode).orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
+        Integer currentQuantity = product.getQuantityInStock();
+        if (currentQuantity >= quantity) {
+            product.setQuantityInStock(currentQuantity - quantity);
+            save(product);
+        } else {
+            throw new IllegalArgumentException("Insufficient quantity in stock");
+        }
+    }*/
+
 
     /*public Product partialUpdate( Integer productCode,  Map<String, Object> product) {
         Optional<Product> existingProduct = productRepository.findById(productCode);
@@ -117,5 +168,7 @@ public class ProductServiceImpl {
         final Product updatedProduct = productRepository.save(product);
         return ResponseEntity.ok(updatedProduct);
     }*/
+
+
 }
 
