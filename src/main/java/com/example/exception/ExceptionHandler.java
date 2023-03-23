@@ -63,6 +63,4 @@ public class ExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse("An unexpected error occurred", 654);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
-
 }

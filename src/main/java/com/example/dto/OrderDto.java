@@ -15,11 +15,10 @@ import java.util.Date;
 public class OrderDto implements Serializable {
 
     private LocalDateTime orderDate=LocalDateTime.now();
-    private Date shippedDate;
-    private Status status;
+    private LocalDateTime shippedDate;
+    private Status status=Status.ORDERED;
     private String comments;
     private Integer customerNumber;
     private Customer customer;
-
 
 }

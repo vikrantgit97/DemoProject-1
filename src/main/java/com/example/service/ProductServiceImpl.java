@@ -58,7 +58,7 @@ public class ProductServiceImpl {
 
     public Product partialUpdate(Integer productCode, Map<String, Object> updates) {
         Product product = productRepository.findById(productCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "productCode", productCode));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not exist"));
 
         // Use ReflectionUtils to update the product fields with the values in the updates Map
         ReflectionUtils.doWithFields(Product.class, field -> {

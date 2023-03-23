@@ -3,12 +3,13 @@ package com.example.entity;
 import com.example.enums.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "order_tbl")
@@ -19,23 +20,27 @@ public class Order {
     private Integer orderNumber;
     @NotNull(message = "Order date cannot be null")
 
-    private Date orderDate;
+    private LocalDateTime orderDate= LocalDateTime.now();
 
-    private Date shippedDate;
+    private LocalDateTime shippedDate;
 
     @NotNull(message = "Status cannot be null")
-    private Status status;
+    private Status status=Status.ORDERED;
 
     @Size(max = 500, message = "Comments cannot be more than 500 characters")
     private String comments;
 
     //@NotNull(message = "Customer number cannot be null")
-    private Integer customerNumber;
+    //private Integer customerNumber;
 
-    /*@ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "customerNumber", nullable = false)
     @JsonIgnore
-    private Customer customer;*/
+    private Customer customer;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDetails> orderDetails = new ArrayList<>();
+
 
 }
 

@@ -24,9 +24,9 @@ public class OrderDetailsServiceImpl {
     public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {
         return orderDetailsRepository.findById(orderNumber).orElse(null);
     }
-
-    public OrderDetails createOrderDetails(OrderDetails orderDetails) {
-        Product product = productService.getProductById(orderDetails.getProductCode());
+}
+/*    public OrderDetails createOrderDetails(OrderDetails orderDetails) {
+        Product product = productService.getProductById();
         if (product != null && product.getQuantityInStock() >= orderDetails.getQuantityOrdered()) {
             product.setQuantityInStock(product.getQuantityInStock() - orderDetails.getQuantityOrdered());
             productService.updateProduct(product.getProductCode(), product);
@@ -34,8 +34,8 @@ public class OrderDetailsServiceImpl {
         }
         return null;
     }
-
-    public OrderDetails updateOrderDetails(Integer orderNumber, OrderDetails orderDetails) {
+}*/
+   /* public OrderDetails updateOrderDetails(Integer orderNumber, OrderDetails orderDetails) {
         OrderDetails existingOrderDetails = getOrderDetailsByOrderNumber(orderNumber);
         if (existingOrderDetails != null) {
             existingOrderDetails.setProductCode(orderDetails.getProductCode());
@@ -63,7 +63,7 @@ public class OrderDetailsServiceImpl {
             orderDetailsRepository.deleteById(orderNumber);
         }
     }
-}
+}*/
 
 
 

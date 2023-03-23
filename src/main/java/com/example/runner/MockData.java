@@ -7,10 +7,10 @@ import com.github.javafaker.Faker;
 
 
 
-public class MockData implements CommandLineRunner {
+public class MockData  {
     Faker faker = new Faker();
-    @Override
-    public void run(String... args) throws Exception {
+
+    CommandLineRunner cmd=  (String... args) -> {
         for (int i=1;i<100;i++){
             CustomerDto customer = new CustomerDto();
             customer.setCustomerFirstName(faker.name().firstName());
@@ -23,5 +23,5 @@ public class MockData implements CommandLineRunner {
             customer.setPostalCode(faker.number().numberBetween(100000, 999999));
             customer.setCountry(faker.address().country());
         }
-    }
+    };
 }

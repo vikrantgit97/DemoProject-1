@@ -28,4 +28,6 @@ public class Product {
     @DecimalMin(value = "100.00", message = "Price must be at least 100.00")
     private Double price;
 
+
+
 }

@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/orderDetails")
+//@RestController
 public class OrderDetailsController {
+/*
 
     @Autowired
     private OrderDetailsServiceImpl orderDetailsService;
@@ -59,3 +59,4 @@ public class OrderDetailsController {
     }
 
 }
+*/}

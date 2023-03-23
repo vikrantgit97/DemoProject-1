@@ -47,7 +47,7 @@ public class Customer {
     @NotBlank(message = "Country cannot be blank")
     private String country;
 
-    /*@OneToMany(mappedBy = "customer" ,cascade = CascadeType.ALL)
-    private List<Order> order=new ArrayList<>();*/
+    @OneToMany(mappedBy = "customer" ,cascade = CascadeType.ALL)
+    private List<Order> order;
 
 }

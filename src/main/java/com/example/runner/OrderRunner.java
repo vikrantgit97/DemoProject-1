@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 @org.springframework.core.annotation.Order(5)
-@Component
+//@Component
 public class OrderRunner implements CommandLineRunner {
 
     @Autowired
@@ -24,8 +24,8 @@ public class OrderRunner implements CommandLineRunner {
         for (int i=1;i<100;i++){
             Order order = new Order();
             //order.setOrderNumber(faker.number().randomNumber());
-            order.setOrderDate(faker.date().past(365, TimeUnit.DAYS));
-            order.setShippedDate(faker.date().future(30, TimeUnit.DAYS));
+          //  order.setOrderDate(faker.date().past(365, TimeUnit.DAYS));
+          //  order.setShippedDate(faker.date().future(30, TimeUnit.DAYS));
             order.setStatus(Status.ORDERED);
             order.setComments(faker.lorem().sentence());
            // order.setCustomerNumber(faker.number().randomNumber());

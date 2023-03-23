@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.stream.IntStream;
 
 @Component
 @Order(2)
@@ -17,22 +18,26 @@ public class CustomerRunner implements CommandLineRunner {
     @Autowired
     private CustomerRepo customerRepo;
 
+
     @Override
     public void run(String... args) throws Exception {
-
         Faker faker = new Faker(new Locale("en-IND"));
-        for (int i = 0; i < 100; i++) {
-            Customer customer = new Customer();
-            customer.setCustomerFirstName(faker.name().firstName());
-            customer.setCustomerLastName(faker.name().lastName());
-            customer.setPhone(faker.number().numberBetween(1000000000L, 9999999999L));
-            customer.setAddressLine1(faker.address().streetAddress());
-            customer.setAddressLine2(faker.address().secondaryAddress());
-            customer.setCity(faker.address().city());
-            customer.setState(faker.address().state());
-            customer.setPostalCode(faker.number().numberBetween(100000, 999999));
-            customer.setCountry(faker.address().country());
-            customerRepo.save(customer);
-        }
+        IntStream.range(0, 100)
+                .mapToObj(i -> {
+                    Customer customer = new Customer();
+                    customer.setCustomerFirstName(faker.name().firstName());
+                    customer.setCustomerLastName(faker.name().lastName());
+                    customer.setPhone(faker.number().numberBetween(1000000000L, 9999999999L));
+                    customer.setAddressLine1(faker.address().streetAddress());
+                    customer.setAddressLine2(faker.address().secondaryAddress());
+                    customer.setCity(faker.address().city());
+                    customer.setState(faker.address().state());
+                    customer.setPostalCode(faker.number().numberBetween(100000, 999999));
+                    customer.setCountry(faker.address().country());
+                    return customer;
+                })
+                .forEach(customerRepo::save);
     }
+
 }
+

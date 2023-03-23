@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import java.util.Locale;
 
 @org.springframework.core.annotation.Order(6)
-@Component
+//@Component
 public class OrderDetailsRunner implements CommandLineRunner {
 
     @Autowired
@@ -41,11 +41,11 @@ public class OrderDetailsRunner implements CommandLineRunner {
             OrderDetails orderDetails = new OrderDetails();
             //orderDetails.setProductCode(faker.number().randomNumber());
             Product product = new Product();
-            orderDetails.setProductCode(product.getProductCode());
+           // orderDetails.setProductCode(product.getProductCode());
             orderDetails.setQuantityOrdered(faker.number().numberBetween(1, 10));
             orderDetails.setPriceEach(faker.number().randomDouble(2, 101, 10001));
             Order order = new Order();
-            orderDetails.setOrderNumber(order.getOrderNumber());
+           // orderDetails.setOrderNumber(order.getOrderNumber());
             orderDetailsRepo.save(orderDetails);
         }
     }
