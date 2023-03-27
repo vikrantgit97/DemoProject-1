@@ -1,6 +1,9 @@
 package com.example.entity;
 
+import com.example.entity.Customer;
+import com.example.entity.OrderDetails;
 import com.example.enums.Status;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +12,6 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,6 +25,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer orderNumber;
 
+    // @NotNull(message = "Order date cannot be null")
     private LocalDate orderDate=LocalDate.now();
 
     private LocalDate shippedDate;
@@ -35,38 +38,32 @@ public class Order {
 
     private Integer customerNumber;
 
+    @JsonIgnore
+    @ManyToOne(cascade ={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.DETACH,CascadeType.DETACH})
+    @JoinColumn(name = "fk_customerNumber")
+    private Customer customer;
 
-
-    @OneToMany(mappedBy="orderNumber", cascade=CascadeType.ALL, orphanRemoval=true)
-    //@JoinColumn(name = "order_id",referencedColumnName = "orderNumber")
+    @OneToMany(mappedBy="order", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<OrderDetails> orderDetails;
 
     public  Order(){
         log.info("info from order entity ");
     }
 
-    public List<OrderDetails> getOrderDetails() {
-        if (orderDetails == null) {
-            orderDetails = new ArrayList();
-        }
-        return orderDetails;
-    }
-
     public void setOrderDetails(List<OrderDetails> orderDetails) {
         this.orderDetails = orderDetails;
     }
-    public void addOrderDetails(Integer orderNumber,Integer productCode,Integer quantityOrdered,Double priceEach) {
+    /*public void addOrderDetails(Integer orderNumber,Integer productCode,Integer quantityOrdered,Double priceEach) {
         OrderDetails newOrderDetails = new OrderDetails();
         newOrderDetails.setOrderNumber(orderNumber);
         newOrderDetails.setProductCode(productCode);
         newOrderDetails.setQuantityOrdered(quantityOrdered);
         newOrderDetails.setPriceEach(priceEach);
-        newOrderDetails.setOrder(this);
+        newOrderDetails.setOrderNumber(this);
         if (orderDetails == null) {
             orderDetails = new ArrayList<OrderDetails>();
         }
         orderDetails.add(newOrderDetails);
-    }
+    }*/
 }
-
 

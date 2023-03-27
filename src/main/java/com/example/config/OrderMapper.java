@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderMapper {
-    private ModelMapper modelMapper;
+    /*private ModelMapper modelMapper;
 
     public OrderMapper() {
         modelMapper = new ModelMapper();
@@ -64,5 +64,5 @@ public class OrderMapper {
 
     public Order toOrder(OrderDto orderDto) {
         return modelMapper.map(orderDto, Order.class);
-    }
+    }*/
 }

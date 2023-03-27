@@ -1,141 +1,77 @@
 package com.example.service;
+
+import com.example.dto.OrderDetailsDto;
+import com.example.dto.OrderDto;
 import com.example.entity.Customer;
 import com.example.entity.Order;
 import com.example.entity.OrderDetails;
 import com.example.entity.Product;
+import com.example.repository.CustomerRepo;
 import com.example.repository.OrderDetailsRepo;
 import com.example.repository.OrderRepo;
 import com.example.repository.ProductRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
-import java.util.ArrayList;
+
+import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
-public class OrderServiceImpl {
-    @Autowired
-    private CustomerServiceImpl customerService;
+public class OrderServiceImpl  {
 
-    @Autowired
-    private OrderRepo orderRepository;
+    private final OrderRepo iOrderRepo;
+    private final OrderDetailsRepo iOrderDetailsRepo;
+    private final CustomerRepo iCustomerRepo;
+    private final ProductRepo productRepo;
+    private final ModelMapper modelMapper;
 
-    @Autowired
-    private ProductRepo productRepo;
-
-    @Autowired
-    private OrderDetailsRepo orderDetailsRepository;
-
-    public Order saveOrder(Order order, List<OrderDetails> orderDetailsList) {
-        // Save the order first to generate its ID
-        Order savedOrder = orderRepository.save(order);
-        // Set the order number for each order detail
-        for (OrderDetails orderDetail : orderDetailsList) {
-            orderDetail.setOrderNumber(savedOrder.getOrderNumber());
-        }
-        // Save the order details
-        orderDetailsRepository.saveAll(orderDetailsList);
-        return savedOrder;
-    }
-
-    //private CustomerRepo customerRepo;
-    public Order createOrdr(Integer customerNumber,Order order,Integer productCode){
-        Customer customerById = customerService.getCustomerById(customerNumber);
-        order.setComments(order.getComments());
-        order.setShippedDate(order.getShippedDate());
-        OrderDetails orderDetails=new OrderDetails();
-        Optional<Product> product=productRepo.findById(productCode);
-        //order.setOrderDetails(orderDetails.getProduct().getProductCode());
-        //orderDetails.setProduct(orderDetails.getProduct());
-        orderDetails.setQuantityOrdered(orderDetails.getQuantityOrdered());
-        orderDetails.setPriceEach(orderDetails.getPriceEach());
-        orderDetailsRepository.save(orderDetails);
-       return orderRepository.save(order);
-    }
-
-    public Order createOrders(Order order, List<OrderDetails> orderDetailsList) {
-        // Save the order
-        order = orderRepository.save(order);
-        // Generate codes for the order details
-        Integer maxId = orderDetailsRepository.getMaxId();
-        if (maxId == null) {
-            maxId = 0;
-        }
-        for (OrderDetails orderDetails : orderDetailsList) {
-            orderDetails.setId(++maxId);
-            //orderDetails.setOrder(order);
-        }
-        // Save the order details
-        orderDetailsRepository.saveAll(orderDetailsList);
-        return order;
-    }
-
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
-    }
-
-    public Order getOrderById(Integer orderNumber) {
-        return orderRepository.findById(orderNumber).orElse(null);
-    }
-
-    public Order addOrder(Order order) {
-        return orderRepository.save(order);
-    }
-
-    public void createOrder(Order order, List<OrderDetails> orderDetails) {
-        order.setOrderDetails(orderDetails);
-        orderRepository.save(order);
-    }
-
-    public Order updateOrder(Order order) {
-        Order existingOrder = getOrderById(order.getOrderNumber());
-        if (existingOrder == null) {
-            return null;
-        }
-        existingOrder.setOrderDate(order.getOrderDate());
-        existingOrder.setShippedDate(order.getShippedDate());
-        existingOrder.setStatus(order.getStatus());
-        existingOrder.setComments(order.getComments());
-        //existingOrder.setCustomerNumber(order.getCustomerNumber());
-        return orderRepository.save(existingOrder);
-    }
-
-    public void deleteOrder(Integer orderNumber) {
-        orderRepository.deleteById(orderNumber);
+    public OrderServiceImpl(OrderRepo iOrderRepo, OrderDetailsRepo iOrderDetailsRepo, CustomerRepo iCustomerRepo, ProductRepo productRepo, ModelMapper modelMapper) {
+        this.iOrderRepo = iOrderRepo;
+        this.iOrderDetailsRepo = iOrderDetailsRepo;
+        this.iCustomerRepo = iCustomerRepo;
+        this.productRepo = productRepo;
+        this.modelMapper = modelMapper;
     }
 
 
-    @Transactional
-    public Order placeOrder(Order order) {
-        //Customer customer = customerService.getAllCustomers().set(order.getCustomerNumber());
-        //order.setComments("required trimmer");
-        addOrder(order);
-        // Save the order first to generate its ID
-        Order savedOrder = orderRepository.save(order);
-        //creating empty list
-        List<OrderDetails> orderDetailsList=new ArrayList<>();
-        // Set the order number for each order detail
-        for (OrderDetails orderDetail : orderDetailsList) {
-            orderDetail.setOrderNumber(savedOrder.getOrderNumber());
-        }
-        // Save the order details
-        orderDetailsRepository.saveAll(orderDetailsList);
-        // Update the product quantities
-        for (OrderDetails orderDetail : orderDetailsList) {
-            Integer productCode = orderDetail.getProductCode();
-            Integer quantityOrdered = orderDetail.getQuantityOrdered();
-            Product product = productRepo.findById(productCode)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
+    public ResponseEntity<OrderDto> createOrder(@Valid OrderDto orderDto) {
+        Order order = modelMapper.map(orderDto, Order.class);
+        order.setComments(orderDto.getComments());
+        Customer customer = iCustomerRepo.findById(orderDto.getCustomerNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        order.setCustomerNumber(customer.getCustomerNumber());
+        order.setCustomer(customer);
+        //order.setCustomerNumber(customer.getCustomerNumber());
+        Order savedOrder = iOrderRepo.save(order);
 
-            Integer quantityInStock = product.getQuantityInStock();
-            if (quantityInStock < quantityOrdered) {
-                throw new IllegalArgumentException("Not enough stock for product " + productCode);
-            }
-            product.setQuantityInStock(quantityInStock - quantityOrdered);
-            productRepo.save(product);
-        }
-        return savedOrder;
+        List<OrderDetailsDto> orderDetailsDtoList = orderDto.getOrderDetails();
+        List<OrderDetails> orderDetailsList = orderDetailsDtoList.stream()
+                .map(orderDetailsDto -> {
+                    Product product = productRepo.findById(orderDetailsDto.getProductCode())
+                            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                    if (product.getQuantityInStock() < orderDetailsDto.getQuantityOrdered()) {
+                        throw new IllegalArgumentException("Product is out of stock");
+                    }
+                    product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDto.getQuantityOrdered());
+                    productRepo.save(product);
+                    OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+                    orderDetails.setOrderNumber(product.getProductCode());
+                    orderDetails.setProductCode(savedOrder.getOrderNumber());
+                    orderDetails.setOrder(savedOrder);
+                    orderDetails.setProduct(product);
+                    orderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+                    orderDetails.setPriceEach(product.getPrice());
+                    return iOrderDetailsRepo.save(orderDetails);
+                })
+                .collect(Collectors.toList());
+
+        OrderDto savedOrderDto = modelMapper.map(savedOrder, OrderDto.class);
+        savedOrderDto.setOrderDetails(orderDetailsList.stream()
+                .map(orderDetails -> modelMapper.map(orderDetails, OrderDetailsDto.class))
+                .collect(Collectors.toList()));
+
+        return ResponseEntity.ok(savedOrderDto);
     }
 }
-

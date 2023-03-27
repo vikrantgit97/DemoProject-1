@@ -283,3 +283,154 @@ The volumes section defines two named volumes for persisting MySQL and Elasticse
 
 Note that you may need to adjust the configuration of each service according to your specific needs,
 such as the version of the software or the container names.
+
+
+
+
+
+
+@RestController
+@RequestMapping("/order")
+public class OrderController {
+
+    @Autowired
+    private IOrderService orderService;
+
+    @Autowired
+    private ICustomerService customerService;
+
+    @Autowired
+    private IProductService productService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @PostMapping("/ord")
+    @Transactional
+    public ResponseEntity<OrderDto> createOrder(@Valid @RequestBody OrderDto orderDto) {
+        Order order = modelMapper.map(orderDto, Order.class);
+        order.setComments(orderDto.getComments());
+        Customer customer = customerService.getCustomerByNumber(orderDto.getCustomerNumber());
+        if (customer == null) {
+            throw new IllegalArgumentException("Customer not found");
+        }
+        order.setCustomer(customer);
+        order.setCustomerNumber(customer.getCustomerNumber());
+
+        List<OrderDetails> orderDetailsList = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for (OrderDetailsDto orderDetailsDto : orderDto.getOrderDetails()) {
+            Product product = productService.getProductByCode(orderDetailsDto.getProductCode());
+            if (product == null) {
+                throw new IllegalArgumentException("Product not found");
+            }
+            if (product.getQuantityInStock() < orderDetailsDto.getQuantityOrdered()) {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDto.getQuantityOrdered());
+            OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+            orderDetails.setProduct(product);
+            orderDetails.setOrder(order);
+            orderDetails.setOrderNumber(order.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            totalAmount = totalAmount.add(orderDetails.getPriceEach().multiply(BigDecimal.valueOf(orderDetails.getQuantityOrdered())));
+            orderDetailsList.add(orderDetails);
+        }
+
+        order.setOrderDetails(orderDetailsList);
+        order.setTotalAmount(totalAmount);
+        Order savedOrder = orderService.saveOrder(order);
+        OrderDto savedOrderDto = modelMapper.map(savedOrder, OrderDto.class);
+        return new ResponseEntity<>(savedOrderDto, HttpStatus.OK);
+    }
+}
+
+
+
+
+
+
+
+
+    public ResponseEntity<OrderDto> createOrder(@Valid OrderDto orderDto) {
+        Order order = modelMapper.map(orderDto, Order.class);
+        order.setComments(orderDto.getComments());
+        Customer customer = iCustomerRepo.findById(orderDto.getCustomerNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        order.setCustomerNumber(customer.getCustomerNumber());
+        order.setCustomer(customer);
+        //order.setCustomerNumber(customer.getCustomerNumber());
+        Order savedOrder = iOrderRepo.save(order);
+
+        List<OrderDetailsDto> orderDetailsDtoList = orderDto.getOrderDetails();
+        List<OrderDetails> orderDetailsList = orderDetailsDtoList.stream()
+                .map(orderDetailsDto -> {
+                    Product product = productRepo.findById(orderDetailsDto.getProductCode())
+                            .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                    if (product.getQuantityInStock() < orderDetailsDto.getQuantityOrdered()) {
+                        throw new IllegalArgumentException("Product is out of stock");
+                    }
+                    product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDto.getQuantityOrdered());
+                    productRepo.save(product);
+                    OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+                    orderDetails.setOrderNumber(product.getProductCode());
+                    orderDetails.setProductCode(savedOrder.getOrderNumber());
+                    orderDetails.setOrder(savedOrder);
+                    orderDetails.setProduct(product);
+                    orderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+                    orderDetails.setPriceEach(product.getPrice());
+                    return iOrderDetailsRepo.save(orderDetails);
+                })
+                .collect(Collectors.toList());
+
+        OrderDto savedOrderDto = modelMapper.map(savedOrder, OrderDto.class);
+        savedOrderDto.setOrderDetails(orderDetailsList.stream()
+                .map(orderDetails -> modelMapper.map(orderDetails, OrderDetailsDto.class))
+                .collect(Collectors.toList()));
+
+        return ResponseEntity.ok(savedOrderDto);
+    }
+}
+
+
+
+
+A network is a collection of devices that are connected together to enable communication and data sharing between them. The devices can include computers, servers, routers, switches, and other networking hardware.
+
+There are different types of networks, including:
+
+Local Area Network (LAN): A LAN is a network that connects devices within a limited geographical area, such as a home, office, or school. LANs can be wired or wireless, and they typically use Ethernet cables or Wi-Fi to connect devices.
+
+Wide Area Network (WAN): A WAN is a network that covers a large geographical area, such as a city, country, or even the entire world. WANs use telecommunication technologies, such as leased lines, satellite links, and internet connections to connect devices.
+
+Metropolitan Area Network (MAN): A MAN is a network that covers a larger area than a LAN but smaller than a WAN. It is typically used to connect multiple LANs within a city or town.
+
+Personal Area Network (PAN): A PAN is a network that connects devices that are located in close proximity to each other, such as a computer and a smartphone. Bluetooth and infrared technologies are commonly used to create PANs.
+
+Networks can also be categorized by their topology, which refers to the physical layout of the devices and the way they are connected. Common topologies include bus, star, ring, and mesh.
+
+Networks play a vital role in enabling communication, collaboration, and data sharing between devices and users. They are used in a wide range of applications, including business, education, healthcare, entertainment, and more.
+
+
+
+
+The OSI (Open Systems Interconnection) model is a conceptual model that describes the communication process between two devices in a network. It divides the communication process into seven layers, each with its own set of protocols, functions, and services. The layers are:
+
+Physical Layer: This layer deals with the physical connection between devices and includes the cabling, connectors, and other hardware components.
+
+Data Link Layer: This layer is responsible for transferring data between devices on the same network. It also handles error detection and correction.
+
+Network Layer: This layer is responsible for routing data between different networks. It determines the best path for data to travel based on network conditions and other factors.
+
+Transport Layer: This layer ensures that data is transmitted reliably and efficiently. It handles issues such as flow control, error recovery, and congestion control.
+
+Session Layer: This layer establishes and manages communication sessions between devices. It also handles issues such as session termination and synchronization.
+
+Presentation Layer: This layer handles data formatting and presentation issues such as data compression, encryption, and decryption.
+
+Application Layer: This layer provides services and interfaces to application programs. It includes protocols such as HTTP, FTP, SMTP, and others that enable applications to communicate over a network.
+
+The OSI model provides a framework for understanding how communication works between devices in a network. Each layer builds upon the layer below it, and each layer is responsible for a specific set of functions and services. By breaking down the communication process into distinct layers, the OSI model makes it easier to troubleshoot network problems and develop new protocols and technologies.

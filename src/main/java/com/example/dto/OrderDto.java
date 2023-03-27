@@ -23,11 +23,6 @@ public class OrderDto implements Serializable {
     private Integer customerNumber;
     private List<OrderDetailsDto> orderDetails;
 
-    public List<OrderDetailsDto> getOrderDetailsDtolist() {
-        if (orderDetails == null) {
-            orderDetails = new ArrayList<OrderDetailsDto>();
-        }
-        return orderDetails;
-    }
+
 
 }
