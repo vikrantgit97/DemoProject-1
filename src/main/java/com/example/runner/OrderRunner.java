@@ -9,9 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 @org.springframework.core.annotation.Order(5)
-//@Component
+@Component
 public class OrderRunner implements CommandLineRunner {
 
     @Autowired
@@ -19,17 +18,19 @@ public class OrderRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Faker faker=new Faker(new Locale("en-IND"));
 
-        for (int i=1;i<100;i++){
-            Order order = new Order();
-            //order.setOrderNumber(faker.number().randomNumber());
-          //  order.setOrderDate(faker.date().past(365, TimeUnit.DAYS));
-          //  order.setShippedDate(faker.date().future(30, TimeUnit.DAYS));
-            order.setStatus(Status.ORDERED);
-            order.setComments(faker.lorem().sentence());
-           // order.setCustomerNumber(faker.number().randomNumber());
-            orderRepo.save(order);
-        }
+      //  if (orderRepo.count() == 0) {
+            for (int i = 1; i < 100; i++) {
+                Faker faker = new Faker(new Locale("en-IND"));
+                Order order = new Order();
+                //order.setOrderDate(faker.date().future(1, TimeUnit.DAYS));
+                order.setComments(faker.lorem().sentence());
+                //order.setStatus(Status.ORDERED);
+                //Customer customer = new Customer();
+                //order.setCustomerNumber(faker.number().randomDigit());
+                //order.setShippedDate(faker.date().future(3, TimeUnit.DAYS));
+                orderRepo.save(order);
+            }
+       // }
     }
 }

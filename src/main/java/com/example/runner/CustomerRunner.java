@@ -18,7 +18,6 @@ public class CustomerRunner implements CommandLineRunner {
     @Autowired
     private CustomerRepo customerRepo;
 
-
     @Override
     public void run(String... args) throws Exception {
         Faker faker = new Faker(new Locale("en-IND"));

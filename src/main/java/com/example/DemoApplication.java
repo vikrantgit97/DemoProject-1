@@ -1,21 +1,22 @@
 package com.example;
 
-import com.example.entity.Order;
-import com.example.entity.OrderDetails;
-import com.example.enums.Status;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.Arrays;
-import java.util.Date;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class DemoApplication {
 
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 
-		Order order = new Order();
+		/*Order order = new Order();
 		order.setOrderDate(new Date());
 		order.setShippedDate(new Date());
 		order.setStatus(Status.SHIPPED);
@@ -38,8 +39,6 @@ public class DemoApplication {
 		order.getOrderDetails().add(orderDetails2);
 		orderRepository.save(order);
 
-
-
 		Order order1 = new Order();
 		order1.setOrderDate(new Date());
 		order1.setStatus(Status.ORDERED);
@@ -57,9 +56,6 @@ public class DemoApplication {
 		details2.setOrder(order);
 
 		order.setOrderDetails(Arrays.asList(details1, details2));
-
-		orderRepository.save(order);
-
+		orderRepository.save(order);*/
 	}
-
 }

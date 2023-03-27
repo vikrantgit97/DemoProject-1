@@ -13,11 +13,8 @@ public class ProductDto implements Serializable {
 
     private Integer productCode;
     private String productName;
-
     private String productDescription;
-
     private Integer quantityInStock;
-
     private Float price;
 
 }

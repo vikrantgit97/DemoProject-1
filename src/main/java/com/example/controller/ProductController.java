@@ -19,18 +19,17 @@ public class ProductController {
     @Autowired
     private ProductServiceImpl productService;
 
-    @GetMapping("/")
+    @GetMapping("")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-
-    @GetMapping("/{productCode}")
+    @GetMapping("{productCode}")
     public ResponseEntity<?> getProductById(@PathVariable("productCode") Integer productCode) {
         if (productService.getProductById(productCode) != null) {
             return ResponseEntity.ok(productService.getProductById(productCode));
         } else {
-            return ErrorResponse.error("Product not found", 404);
+            return ErrorResponse.error("Product not found", "404");
         }
     }
 
@@ -41,28 +40,11 @@ public class ProductController {
     }
 
 
-    @PutMapping("/{productCode}")
+    @PutMapping("{productCode}")
     public Product updateProduct(@PathVariable Integer productCode, @RequestBody Product product) {
         return productService.updateProduct(productCode, product);
     }
 
-    /*    // PUT /products/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable("id") Integer id, @RequestBody ProductDTO productDTO) {
-        Optional<ProductDTO> product = productRepository.findById(id);
-        if (product.isPresent()) {
-            ProductDTO existingProduct = product.get();
-            existingProduct.setProductName(productDTO.getProductName());
-            existingProduct.setProductDescription(productDTO.getProductDescription());
-            existingProduct.setQuantityInStock(productDTO.getQuantityInStock());
-            existingProduct.setPrice(productDTO.getPrice());
-            ProductDTO updatedProduct = productRepository.save(existingProduct);
-            return SuccessResponse.ok("Product updated successfully", updatedProduct);
-        } else {
-            return ErrorResponse.error("Product not found", 404);
-        }
-    }
-*/
 
     @DeleteMapping("/{productCode}")
     public ResponseEntity<?> deleteProduct(@PathVariable("productCode") Integer productCode) {
@@ -70,7 +52,7 @@ public class ProductController {
             productService.deleteProduct(productCode);
             return SuccessResponse.ok("Product deleted successfully", null);
         } else {
-            return ErrorResponse.error("Product not found", 404);
+            return ErrorResponse.error("Product not found", "Error_101");
         }
     }
 
@@ -110,5 +92,4 @@ public class ProductController {
     public ResponseEntity<List<Product>> searchProductBynameContains(@PathVariable String search) {
         return new ResponseEntity<>(productService.searchBy(search), HttpStatus.OK);
     }
-
 }

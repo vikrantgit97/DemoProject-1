@@ -11,6 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class OrderDetailsDto implements Serializable {
 
+    private Integer id;
     private Integer orderNumber;
     private Integer productCode;
     private Integer quantityOrdered;

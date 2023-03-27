@@ -23,6 +23,14 @@ public class CustomerDto implements Serializable {
     private String state;
     private Integer postalCode;
     private String country;
-    private List<Order> order;
 
 }
+
+
+
+
+
+
+
+
+

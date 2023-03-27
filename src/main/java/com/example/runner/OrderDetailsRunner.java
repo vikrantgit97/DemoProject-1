@@ -46,7 +46,7 @@ public class OrderDetailsRunner implements CommandLineRunner {
             orderDetails.setPriceEach(faker.number().randomDouble(2, 101, 10001));
             Order order = new Order();
            // orderDetails.setOrderNumber(order.getOrderNumber());
-            orderDetailsRepo.save(orderDetails);
+           // orderDetailsRepo.save(orderDetails);
         }
     }
 }

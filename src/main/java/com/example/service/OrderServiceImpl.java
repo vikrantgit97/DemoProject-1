@@ -1,17 +1,17 @@
 package com.example.service;
-
 import com.example.entity.Customer;
 import com.example.entity.Order;
 import com.example.entity.OrderDetails;
 import com.example.entity.Product;
-import com.example.repository.CustomerRepo;
 import com.example.repository.OrderDetailsRepo;
 import com.example.repository.OrderRepo;
+import com.example.repository.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderServiceImpl {
@@ -22,57 +22,20 @@ public class OrderServiceImpl {
     private OrderRepo orderRepository;
 
     @Autowired
-    private ProductServiceImpl productService;
+    private ProductRepo productRepo;
 
     @Autowired
     private OrderDetailsRepo orderDetailsRepository;
 
-        @Transactional
-        public Order placeOrder(Order order, List<OrderDetails> orderDetailsList) {
-            // Save the order first to generate its ID
-            Order savedOrder = orderRepository.save(order);
-
-            // Set the order number for each order detail
-            for (OrderDetails orderDetail : orderDetailsList) {
-                orderDetail.setOrderNumber(savedOrder.getOrderNumber());
-            }
-
-            // Save the order details
-            orderDetailsRepository.saveAll(orderDetailsList);
-
-            // Update the product quantities
-            for (OrderDetails orderDetail : orderDetailsList) {
-                Integer productCode = orderDetail.getProductCode();
-                Integer quantityOrdered = orderDetail.getQuantityOrdered();
-                Product product = productRepository.findById(productCode)
-                        .orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
-
-                Integer quantityInStock = product.getQuantityInStock();
-                if (quantityInStock < quantityOrdered) {
-                    throw new IllegalArgumentException("Not enough stock for product " + productCode);
-                }
-
-                product.setQuantityInStock(quantityInStock - quantityOrdered);
-                productRepository.save(product);
-            }
-
-            return savedOrder;
-        }
-
-
-
     public Order saveOrder(Order order, List<OrderDetails> orderDetailsList) {
         // Save the order first to generate its ID
         Order savedOrder = orderRepository.save(order);
-
         // Set the order number for each order detail
         for (OrderDetails orderDetail : orderDetailsList) {
             orderDetail.setOrderNumber(savedOrder.getOrderNumber());
         }
-
         // Save the order details
         orderDetailsRepository.saveAll(orderDetailsList);
-
         return savedOrder;
     }
 
@@ -82,11 +45,9 @@ public class OrderServiceImpl {
         order.setComments(order.getComments());
         order.setShippedDate(order.getShippedDate());
         OrderDetails orderDetails=new OrderDetails();
-
-        Product product=productService.getProductById(productCode);
-
+        Optional<Product> product=productRepo.findById(productCode);
         //order.setOrderDetails(orderDetails.getProduct().getProductCode());
-        orderDetails.setProduct(orderDetails.getProduct());
+        //orderDetails.setProduct(orderDetails.getProduct());
         orderDetails.setQuantityOrdered(orderDetails.getQuantityOrdered());
         orderDetails.setPriceEach(orderDetails.getPriceEach());
         orderDetailsRepository.save(orderDetails);
@@ -96,7 +57,6 @@ public class OrderServiceImpl {
     public Order createOrders(Order order, List<OrderDetails> orderDetailsList) {
         // Save the order
         order = orderRepository.save(order);
-
         // Generate codes for the order details
         Integer maxId = orderDetailsRepository.getMaxId();
         if (maxId == null) {
@@ -104,12 +64,10 @@ public class OrderServiceImpl {
         }
         for (OrderDetails orderDetails : orderDetailsList) {
             orderDetails.setId(++maxId);
-            orderDetails.setOrder(order);
+            //orderDetails.setOrder(order);
         }
-
         // Save the order details
         orderDetailsRepository.saveAll(orderDetailsList);
-
         return order;
     }
 
@@ -149,10 +107,35 @@ public class OrderServiceImpl {
 
 
     @Transactional
-    public void placeOrder(Order order) {
-        //Customer customer = customerService.set(order.getCustomerNumber());
-        order.setComments("required trimmer");
+    public Order placeOrder(Order order) {
+        //Customer customer = customerService.getAllCustomers().set(order.getCustomerNumber());
+        //order.setComments("required trimmer");
         addOrder(order);
+        // Save the order first to generate its ID
+        Order savedOrder = orderRepository.save(order);
+        //creating empty list
+        List<OrderDetails> orderDetailsList=new ArrayList<>();
+        // Set the order number for each order detail
+        for (OrderDetails orderDetail : orderDetailsList) {
+            orderDetail.setOrderNumber(savedOrder.getOrderNumber());
+        }
+        // Save the order details
+        orderDetailsRepository.saveAll(orderDetailsList);
+        // Update the product quantities
+        for (OrderDetails orderDetail : orderDetailsList) {
+            Integer productCode = orderDetail.getProductCode();
+            Integer quantityOrdered = orderDetail.getQuantityOrdered();
+            Product product = productRepo.findById(productCode)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
+
+            Integer quantityInStock = product.getQuantityInStock();
+            if (quantityInStock < quantityOrdered) {
+                throw new IllegalArgumentException("Not enough stock for product " + productCode);
+            }
+            product.setQuantityInStock(quantityInStock - quantityOrdered);
+            productRepo.save(product);
+        }
+        return savedOrder;
     }
 }
 

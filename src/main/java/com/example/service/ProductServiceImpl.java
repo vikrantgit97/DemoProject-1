@@ -3,13 +3,14 @@ package com.example.service;
 import com.example.entity.Product;
 import com.example.exception.ResourceNotFoundException;
 import com.example.repository.ProductRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
 import java.util.List;
 import java.util.Map;
-
+@Slf4j
 @Service
 public class ProductServiceImpl {
 
@@ -41,6 +42,7 @@ public class ProductServiceImpl {
     }
 
     public void deleteProduct(Integer productCode) {
+        log.info("Product Service Implementation : deleteProduct() method");
         productRepository.deleteById(productCode);
     }
 
