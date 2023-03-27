@@ -434,3 +434,33 @@ Presentation Layer: This layer handles data formatting and presentation issues s
 Application Layer: This layer provides services and interfaces to application programs. It includes protocols such as HTTP, FTP, SMTP, and others that enable applications to communicate over a network.
 
 The OSI model provides a framework for understanding how communication works between devices in a network. Each layer builds upon the layer below it, and each layer is responsible for a specific set of functions and services. By breaking down the communication process into distinct layers, the OSI model makes it easier to troubleshoot network problems and develop new protocols and technologies.
+
+
+
+
+
+
+
+@RestController
+public class UserController {
+
+    @Autowired
+    private UserService userService;
+
+    @PostMapping("/users")
+    public ResponseEntity<Object> createUser(@RequestBody User user) {
+        try {
+            userService.save(user);
+            return new ResponseEntity<>("User created successfully", HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            ErrorDetails errorDetails = ex.getErrorDetails();
+            return new ResponseEntity<>(errorDetails.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (MethodArgumentNotValidException ex) {
+            ErrorDetails errorDetails = ((MethodArgumentNotValidException) ex).getErrorDetails();
+            return new ResponseEntity<>(errorDetails.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception ex) {
+            ErrorDetails errorDetails = ex.getErrorDetails();
+            return new ResponseEntity<>(errorDetails.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+}
