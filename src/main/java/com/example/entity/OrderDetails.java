@@ -32,13 +32,13 @@ public class OrderDetails {
     private Double priceEach;
 
     @ManyToOne
-    @JoinColumn(name = "fk_orderNumber")
+    //@JoinColumn(name = "fk_orderNumber")
     @JsonBackReference
     private Order order;
 
     @JsonIgnore
     @ManyToOne(targetEntity = Product.class,cascade ={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH,CascadeType.DETACH})
-    @JoinColumn(name = "fk_productCode")      //default join column product_tbl_product_code
+    //@JoinColumn(name = "fk_productCode")      //default join column product_tbl_product_code
     private Product product;
 }
 

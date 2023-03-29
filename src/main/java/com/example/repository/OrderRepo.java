@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrderRepo extends JpaRepository<Order, Integer> {
+
+   /* @Query("SELECT p FROM Product p WHERE p.productId IN :productIds")
+    List<Product> findByProductIds(@Param("productIds") List<Integer> productIds);*/
 }

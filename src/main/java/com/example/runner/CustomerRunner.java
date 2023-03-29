@@ -21,7 +21,7 @@ public class CustomerRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Faker faker = new Faker(new Locale("en-IND"));
-        IntStream.range(0, 100)
+        IntStream.range(0, 10)
                 .mapToObj(i -> {
                     Customer customer = new Customer();
                     customer.setCustomerFirstName(faker.name().firstName());

@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.OrderDto;
+import com.example.entity.Order;
 import com.example.service.OrderServiceImpl;
 import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
@@ -8,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/order")
@@ -20,14 +18,9 @@ public class OrderController {
     @Autowired
     private OrderServiceImpl orderService;
 
+    @Autowired
     private ModelMapper modelMapper;
 
-    @Autowired
-    public OrderController(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-        /*this.modelMapper.addConverter(populateExistingNumbers);
-        this.modelMapper.addConverter(handlePhoneNumbersEntered);*/
-    }
 
     @PostMapping
     public ResponseEntity<?> addOrder(@RequestBody OrderDto orderDto) {
@@ -37,6 +30,22 @@ public class OrderController {
             throw new RuntimeException( ex.getMessage());
         }
     }
+
+    @PostMapping("/o")
+    public ResponseEntity<OrderDto> addOrder3(@RequestBody  OrderDto orderDto) {
+        Order order1 =modelMapper.map(orderDto,Order.class);
+        Order order = orderService.addOrder6(order1);
+        OrderDto order2 =modelMapper.map(order,OrderDto.class);
+            return new ResponseEntity<>(order2,HttpStatus.CREATED);
+    }
+
+
+    @GetMapping
+    public ResponseEntity<?> addOrder() {
+            return new ResponseEntity<>(orderService.listOfOrders(),HttpStatus.CREATED);
+
+    }
+
 
 
 

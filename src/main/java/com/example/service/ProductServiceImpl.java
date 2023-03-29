@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.dto.UpdateQuantityRequest;
 import com.example.entity.Product;
 import com.example.exception.ResourceNotFoundException;
 import com.example.repository.ProductRepo;
@@ -107,6 +108,65 @@ public class ProductServiceImpl {
     }
 
 
+    public List<Product> findProductByIdInListWithStock(List<Integer> productIds) {
+        try {
+            return productRepository.findByProductCodeInAndQuantityInStockGreaterThan(productIds, 0);
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    public Product updateProductQuantityInStock(Integer productCode,  Integer quantity) {
+        Product existingProduct = getProductById(productCode);
+        Integer originalQuantityInStock = existingProduct.getQuantityInStock();
+        if ((existingProduct.getQuantityInStock() >= quantity) && (existingProduct != null) &&  (1 <= quantity)) {
+            Integer updateProductQuantity = existingProduct.getQuantityInStock() - quantity;
+            existingProduct.setQuantityInStock(updateProductQuantity);
+            return productRepository.save(existingProduct);
+        } else {
+            throw new IllegalArgumentException("for increment quantity cannot be less than zero & for decrement quantity " +
+                    "cannot be greater than original quantity");
+        }
+    }
+
+    /*public Product cancelGivenQtyOfAProductForAnOrder(UpdateQuantityRequest orderDetails) {
+        try {
+            for (UpdateQuantityRequest detail : orderDetails) {
+                if (detail.getCount() == null) {
+                    detail.setCount(1);
+                }
+                Product product = productRepository.findById(detail.getProductCode()).orElseThrow(ProductNotFoundException::new);
+                product.setQuantityInStock(product.getQuantityInStock() + detail.getQuantityOrdered());
+                productRepository.save(product);
+                //TODO: Throw InsufficientStockException
+                return product;
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+        return null;
+    }
+
+    public Product bookGivenQtyOfAProductForAnOrder(List<UpdateQuantityRequest> orderDetails) {
+        for (UpdateQuantityRequest detail : orderDetails) {
+            if (orderDetails.size() == 1) {
+                detail.setQuantityOrdered(detail.getQuantityOrdered());
+            }
+            Product product = productRepository.findById(detail.getProductCode())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with code: " + detail.getProductCode()));
+            if (product.getQuantityInStock() >= detail.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - detail.getQuantityOrdered());
+                productRepository.save(product);
+            } else {
+                throw new ResourceNotFoundException("InsufficientStockException");
+            }
+            return product;
+        }
+
+    }*/
+}
+
     /*// method to increment quantityInStock by a given amount
     default void incrementQuantityInStock(Integer productCode, Integer quantity) {
         ProductDto product = findById(productCode).orElseThrow(() -> new IllegalArgumentException("Invalid product code"));
@@ -172,5 +232,5 @@ public class ProductServiceImpl {
     }*/
 
 
-}
+
 

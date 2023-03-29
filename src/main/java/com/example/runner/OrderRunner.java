@@ -20,7 +20,7 @@ public class OrderRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
       //  if (orderRepo.count() == 0) {
-            for (int i = 1; i < 100; i++) {
+            for (int i = 1; i < 5; i++) {
                 Faker faker = new Faker(new Locale("en-IND"));
                 Order order = new Order();
                 //order.setOrderDate(faker.date().future(1, TimeUnit.DAYS));

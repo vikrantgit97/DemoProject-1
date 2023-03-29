@@ -436,6 +436,55 @@ Application Layer: This layer provides services and interfaces to application pr
 The OSI model provides a framework for understanding how communication works between devices in a network. Each layer builds upon the layer below it, and each layer is responsible for a specific set of functions and services. By breaking down the communication process into distinct layers, the OSI model makes it easier to troubleshoot network problems and develop new protocols and technologies.
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.exception.ObjectDoesNotExist;
+import com.example.demo.exception.OutOfStockException;
+import com.example.demo.models.Customer;
+import com.example.demo.models.Order;
+import com.example.demo.models.OrderDetail;
+import com.example.demo.models.Product;
+import com.example.demo.repositories.OrderRepository;
+import com.example.demo.repositories.ProductRepository;
+import java.util.List;
+
+@Service
+public class OrderService {
+    @Autowired
+    private OrderRepository orderRepository;
+    @Autowired
+    private ProductRepository productRepository;
+
+    public Order createOrder(Order order) {
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        Order newOrder = orderRepository.save(order);
+
+        try {
+            for (OrderDetail orderDetail : orderDetails) {
+                Product product = productRepository.findById(orderDetail.getProductCode().getId()).orElseThrow(ObjectDoesNotExist::new);
+                int quantityOrdered = orderDetail.getQuantityOrdered();
+                if (quantityOrdered <= product.getQuantityInStock()) {
+                    product.setQuantityInStock(product.getQuantityInStock() - quantityOrdered);
+                    productRepository.save(product);
+                    OrderDetail newOrderDetail = new OrderDetail();
+                    newOrderDetail.setOrderNumber(newOrder);
+                    newOrderDetail.setProductCode(product);
+                    newOrderDetail.setQuantityOrdered(quantityOrdered);
+                    newOrderDetail.setPriceEach(product.getPrice());
+                    orderRepository.save(newOrderDetail);
+                } else {
+                    throw new OutOfStockException();
+                }
+            }
+            return newOrder;
+        } catch (ObjectDoesNotExist e) {
+            throw new ObjectDoesNotExist();
+        } catch (OutOfStockException e) {
+            throw new OutOfStockException();
+        }
+    }
+}
 
 
 

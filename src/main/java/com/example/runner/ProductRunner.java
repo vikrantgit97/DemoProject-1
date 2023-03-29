@@ -20,7 +20,7 @@ public class ProductRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         Faker faker=new Faker(new Locale("en-IND"));
-        for(int i=0;i<100;i++){
+        for(int i=0;i<10;i++){
             Product product = new Product();
             product.setProductName(faker.commerce().productName());
             product.setProductDescription(faker.lorem().sentence());

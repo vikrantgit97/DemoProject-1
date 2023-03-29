@@ -31,6 +31,7 @@ public class Order {
     private LocalDate shippedDate;
 
     @NotNull(message = "Status cannot be null")
+    @Enumerated(EnumType.STRING)
     private Status status=Status.ORDERED;
 
     @Size(max = 500, message = "Comments cannot be more than 500 characters")
@@ -46,7 +47,7 @@ public class Order {
     @OneToMany(mappedBy="order", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<OrderDetails> orderDetails;
 
-    public  Order(){
+    public Order(){
         log.info("info from order entity ");
     }
 
