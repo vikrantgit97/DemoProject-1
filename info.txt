@@ -513,3 +513,85 @@ public class UserController {
         }
     }
 }
+
+
+
+
+
+public class ErrorCode {
+    public static final Map<String, String> RESPONSE_CODE = new HashMap<String, String>() {{
+        put("data_not_created", "RAERR_480");
+        put("data_not_found", "RAERR_481");
+        put("required_field", "RAERR_482");
+        put("update_failed", "RAERR_483");
+        put("delete_failed", "RAERR_484");
+        put("request_failed", "RAERR_485");
+        put("json_parse_error", "RAERR_486");
+        put("serializer_error", "RAERR_487");
+        put("server_error", "RAERR_500");
+        put("field_error", "RAERR_488");
+    }};
+}
+
+public class ResponseMessage {
+    public static final Map<String, String> MESSAGE = new HashMap<String, String>() {{
+        put("data_not_created", "Data Not Created");
+        put("data_not_found", "Data Not Found");
+        put("required_field", "Required Field");
+        put("update_failed", "Update Failed");
+        put("delete_failed", "Delete Failed");
+        put("request_failed", "Json Request Failed");
+        put("json_parse_error", "Json Parse Error");
+        put("serializer_error", "Serializer Error");
+        put("field_error", "Field Error");
+        put("server_error", "Something Went Wrong");
+        put("success", "Success Response");
+    }};
+}
+
+import org.springframework.http.HttpStatus;
+public class ResponseStatus {
+    public static final Map<String, HttpStatus> STATUS_CODE = new HashMap<String, HttpStatus>() {{
+        put("data_not_created", HttpStatus.INTERNAL_SERVER_ERROR);
+        put("data_not_found", HttpStatus.NOT_FOUND);
+        put("required_field", HttpStatus.UNPROCESSABLE_ENTITY);
+        put("update_failed", HttpStatus.BAD_REQUEST);
+        put("delete_failed", HttpStatus.BAD_REQUEST);
+        put("request_failed", HttpStatus.UNPROCESSABLE_ENTITY);
+        put("json_parse_error", HttpStatus.UNPROCESSABLE_ENTITY);
+        put("serializer_error", HttpStatus.UNPROCESSABLE_ENTITY);
+        put("field_error", HttpStatus.INTERNAL_SERVER_ERROR);
+        put("server_error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }};
+}
+
+
+import org.springframework.http.ResponseEntity;
+public class CustomResponse {
+    public static ResponseEntity<Object> response(String code, Object data) {
+        // Create the response data object
+        Map<String, Object> responseData = new HashMap<String, Object>();
+        responseData.put("success", true);
+
+        // Handle error code
+        String errorCode = ErrorCodes.RESPONSE_CODE.get(code);
+        if (errorCode != null) {
+            responseData.put("success", false);
+            responseData.put("error_code", errorCode);
+        }
+
+        // Handle error message
+        String errorMessage = ResponseMessages.MESSAGE.get(code);
+        if (errorMessage != null) {
+            responseData.put("message", Collections.singletonList(errorMessage));
+        }
+
+        // Handle data
+        if (data != null) {
+            responseData.put("data", data);
+        }
+
+        HttpStatus httpStatus = ResponseStatus.STATUS_CODE.get(code);
+        return new ResponseEntity<>(responseData, httpStatus);
+    }
+}
