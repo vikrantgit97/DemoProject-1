@@ -595,3 +595,78 @@ public class CustomResponse {
         return new ResponseEntity<>(responseData, httpStatus);
     }
 }
+
+
+
+
+
+
+
+
+
+
+---------------------------------------------------------------29/03/2022--------------------------------------
+
+SELECT p FROM Product p
+WHERE p.productCode IN :productCodes
+AND p.quantityInStock >= :requestedQuantity
+
+
+
+
+
+List<Integer> productCodes = request.getOrderDetails().stream()
+    .map(OrderDetail::getProductCode)
+    .collect(Collectors.toList());
+
+EntityManager em = // obtain EntityManager from EntityManagerFactory
+Query query = em.createQuery("SELECT p FROM Product p WHERE p.productCode IN :productCodes AND p.quantityInStock >= :requestedQuantity");
+for (OrderDetail orderDetail : request.getOrderDetails()) {
+    query.setParameter("productCodes", productCodes);
+    query.setParameter("requestedQuantity", orderDetail.getQuantityOrder());
+    List<Product> products = query.getResultList();
+    if (products.isEmpty()) {
+        // requested quantity for this product is not available in stock
+    } else {
+        // requested quantity for this product is available in stock
+    }
+}
+
+
+
+
+UPDATE Product p
+SET p.quantityInStock = p.quantityInStock - :requestedQuantity
+WHERE p.productCode IN :productCodes
+AND p.quantityInStock >= :requestedQuantity
+
+
+
+
+UPDATE Product p
+SET p.quantityInStock = p.quantityInStock - :quantityOrder
+WHERE p.productCode IN :productCodes
+AND p.quantityInStock >= :quantityOrder
+
+
+List<Integer> productCodes = request.getOrderDetails().stream()
+    .map(OrderDetail::getProductCode)
+    .collect(Collectors.toList());
+
+EntityManager em = // obtain EntityManager from EntityManagerFactory
+Query query = em.createQuery("UPDATE Product p SET p.quantityInStock = p.quantityInStock - :quantityOrder WHERE p.productCode IN :productCodes AND p.quantityInStock >= :quantityOrder");
+
+em.getTransaction().begin();
+for (OrderDetail orderDetail : request.getOrderDetails()) {
+    query.setParameter("productCodes", productCodes);
+    query.setParameter("quantityOrder", orderDetail.getQuantityOrder());
+    int rowsAffected = query.executeUpdate();
+    if (rowsAffected == 0) {
+        // requested quantity for this product is not available in stock
+        em.getTransaction().rollback();
+        // Return an appropriate response to the client indicating that the requested quantity is not available in stock.
+        return;
+    }
+}
+em.getTransaction().commit();
+// Return a success response to the client indicating that the order has been placed and the stock quantities have been updated.

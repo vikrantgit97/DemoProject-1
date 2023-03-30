@@ -1,11 +1,13 @@
 package com.example.service;
 
+import com.example.entity.Order;
 import com.example.entity.OrderDetails;
 import com.example.entity.Product;
 import com.example.repository.OrderDetailsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,9 +23,90 @@ public class OrderDetailsServiceImpl {
         return orderDetailsRepository.findAll();
     }
 
-    public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {
-        return orderDetailsRepository.findById(orderNumber).orElse(null);
-    }
+//    public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {
+//        return orderDetailsRepository.findById(orderNumber).orElse(null);
+//    }
+//
+//    public Order createOrder(Order orderReq) throws Exception {
+//        List<String> productIds = new ArrayList<>();
+//
+//        // Gathering product ids
+//        for (OrderDetails detail : orderReq.getOrderDetails()) {
+//            productIds.add(detail.getProductCode());
+//        }
+//
+//        // Create order
+//        Order order = null;
+//        try {
+//            order = orderRepository.save(orderReq);
+//        } catch (Exception e) {
+//            throw e;
+//        }
+//
+//        if (order != null) {
+//            // Get product details from database
+//            List<Product> products = null;
+//            try {
+//                products = productRepository.findProductByIdInListWithStock(productIds);
+//            } catch (Exception e) {
+//                throw e;
+//            }
+//
+//            // If all required products found
+//            if (products.size() == productIds.size()) {
+//                List<OrderDetail> orderDetails = new ArrayList<>();
+//
+//                // Create order details (No Network hit)
+//                for (OrderDetail detail : orderReq.getOrderDetail()) {
+//                    Product product = products.stream()
+//                            .filter(p -> p.getProductCode().equals(detail.getProductCode()))
+//                            .findFirst()
+//                            .orElse(null);
+//                    if (product != null && product.getQuantityInStock() >= detail.getQuantityOrdered()) {
+//                        OrderDetail orderDetail = new OrderDetail();
+//                        orderDetail.setOrderNumber(order.getOrderNumber());
+//                        orderDetail.setProductCode(detail.getProductCode());
+//                        orderDetail.setQuantityOrdered(detail.getQuantityOrdered());
+//                        orderDetail.setPriceEach(product.getPrice());
+//                        orderDetails.add(orderDetail);
+//                    } else {
+//                        // TODO: Throw exception insufficientStockException
+//                        throw new InsufficientStockException();
+//                    }
+//                }
+//
+//                // Save bulk order details into database
+//                try {
+//                    orderDetailRepository.createOrderDetail(orderDetails);
+//                } catch (Exception e) {
+//                    throw e;
+//                }
+//
+//                // Update product quantity in Stock (in Database)
+//                try {
+//                    productRepository.bookGivenQtyOfAProductForAnOrder(orderDetails);
+//                } catch (InsufficientStockException e) {
+//                    throw e;
+//                }
+//
+//                return order;
+//            } else {
+//                // TODO: create custom error ProductOutOfStock
+//                throw new ProductOutOfStockException();
+//            }
+//        }
+//        return order;
+//    }
+//
+//    public void createOrderDetail(List<OrderDetail> orderDetails) {
+//        List<OrderDetailEntity> entities = new ArrayList<>();
+//        for (OrderDetail detail : orderDetails) {
+//            entities.add(new OrderDetailEntity(detail.getOrderNumber(), detail.getProductCode(),
+//                    detail.getQuantityOrdered(), detail.getPriceEach()));
+//        }
+//        orderDetailRepository.saveAll(entities);
+//    }
+    
 }
 /*    public OrderDetails createOrderDetails(OrderDetails orderDetails) {
         Product product = productService.getProductById();

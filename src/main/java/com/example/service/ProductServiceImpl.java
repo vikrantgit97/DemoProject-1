@@ -1,16 +1,24 @@
 package com.example.service;
 
-import com.example.dto.UpdateQuantityRequest;
-import com.example.entity.Product;
-import com.example.exception.ResourceNotFoundException;
-import com.example.repository.ProductRepo;
-import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Parameter;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
-import java.util.List;
-import java.util.Map;
+import com.example.entity.Customer;
+import com.example.entity.Product;
+import com.example.exception.ResourceNotFoundException;
+import com.example.repository.ProductRepo;
+
+import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class ProductServiceImpl {
@@ -128,7 +136,28 @@ public class ProductServiceImpl {
             throw new IllegalArgumentException("for increment quantity cannot be less than zero & for decrement quantity " +
                     "cannot be greater than original quantity");
         }
+
+
+        /*@Transactional
+        default void setNameById(List<Integer> ids, List<Long> productquantity) {
+            Map<Long, Parameter> data = StreamSupport.stream(findAllById(ids).spliterator(), false)
+                    .collect(Collectors.toMap(
+                            Customer::getId,
+                            Function.identity()
+                    ));
+            for (int i = 0, n = ids.size(); i < n; i++) {
+                Parameter parameter = data.get(ids.get(i));
+                if (parameter != null) {
+                    parameter.setName(names.get(i));
+                }
+            }
+            saveAll(data.values());
+        }*/
+
     }
+
+
+
 
     /*public Product cancelGivenQtyOfAProductForAnOrder(UpdateQuantityRequest orderDetails) {
         try {
