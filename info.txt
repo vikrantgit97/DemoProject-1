@@ -670,3 +670,774 @@ for (OrderDetail orderDetail : request.getOrderDetails()) {
 }
 em.getTransaction().commit();
 // Return a success response to the client indicating that the order has been placed and the stock quantities have been updated.
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+import java.util.*;
+
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+
+public class ProductServiceImplTest {
+
+    @Mock
+    private IProductRepo iProductRepo;
+
+    @InjectMocks
+    private ProductServiceImpl productServiceImpl;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testCreateProduct() {
+        // arrange
+        Product product = new Product();
+        when(iProductRepo.save(product)).thenReturn(product);
+
+        // act
+        Product createdProduct = productServiceImpl.createProduct(product);
+
+        // assert
+        assertEquals(product, createdProduct);
+        verify(iProductRepo, times(1)).save(product);
+    }
+
+    @Test
+    public void testCreateProductList() {
+        // arrange
+        List<Product> productList = new ArrayList<>();
+        when(iProductRepo.saveAll(productList)).thenReturn(productList);
+
+        // act
+        List<Product> createdProductList = productServiceImpl.createProductList(productList);
+
+        // assert
+        assertEquals(productList, createdProductList);
+        verify(iProductRepo, times(1)).saveAll(productList);
+    }
+
+    @Test
+    public void testUpdateProduct() {
+        // arrange
+        Integer productCode = 1;
+        Product existingProduct = new Product();
+        existingProduct.setProductName("Product 1");
+        existingProduct.setProductDescription("Description 1");
+        existingProduct.setQuantityInStock(10);
+        existingProduct.setPrice(100.0);
+        Product updatedProduct = new Product();
+        updatedProduct.setProductName("Product 1 Updated");
+        updatedProduct.setProductDescription("Description 1 Updated");
+        updatedProduct.setQuantityInStock(20);
+        updatedProduct.setPrice(200.0);
+        when(iProductRepo.findById(productCode)).thenReturn(Optional.of(existingProduct));
+        when(iProductRepo.save(existingProduct)).thenReturn(existingProduct);
+
+        // act
+        Product result = productServiceImpl.updateProduct(productCode, updatedProduct);
+
+        // assert
+        assertEquals(updatedProduct.getProductName(), result.getProductName());
+        assertEquals(updatedProduct.getProductDescription(), result.getProductDescription());
+        assertEquals(updatedProduct.getQuantityInStock(), result.getQuantityInStock());
+        assertEquals(updatedProduct.getPrice(), result.getPrice());
+        verify(iProductRepo, times(1)).findById(productCode);
+        verify(iProductRepo, times(1)).save(existingProduct);
+    }
+
+    @Test
+    public void testUpdateProductWithInvalidProductCode() {
+        // arrange
+        Integer productCode = 1;
+        Product updatedProduct = new Product();
+        updatedProduct.setProductName("Product 1 Updated");
+        updatedProduct.setProductDescription("Description 1 Updated");
+        updatedProduct.setQuantityInStock(20);
+        updatedProduct.setPrice(200.0);
+        when(iProductRepo.findById(productCode)).thenReturn(Optional.empty());
+
+        // act and assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            productServiceImpl.updateProduct(productCode, updatedProduct);
+        });
+        verify(iProductRepo, times(1)).findById(productCode);
+        verify(iProductRepo, never()).save(any());
+    }
+
+    @Test
+    public void testPartialUpdate() {
+        // arrange
+        Integer productCode = 1;
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("productName", "Product 1 Updated");
+        updates.put("productDescription", "Description 1 Updated");
+        Product existingProduct = new Product();
+        existingProduct.setProductName("Product 1");
+        existingProduct.setProductDescription("Description 1");
+        when(iProductRepo.findById(productCode)).
+}
+
+
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class ListOperations {
+
+    public static <T extends Comparable<T>> List<T> sortList(List<T> list) {
+        if(list == null) {
+            return null;
+        }
+        Collections.sort(list);
+        return list;
+    }
+
+    public static <T> List<T> reverseList(List<T> list) {
+        if(list == null) {
+            return null;
+        }
+        Collections.reverse(list);
+        return list;
+    }
+
+}
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+
+public class ListOperationsTest {
+
+    private List<Integer> integerList;
+    private List<String> stringList;
+
+    @BeforeEach
+    public void setUp() {
+        integerList = new ArrayList<>();
+        integerList.add(4);
+        integerList.add(2);
+        integerList.add(1);
+        integerList.add(3);
+
+        stringList = new ArrayList<>();
+        stringList.add("apple");
+        stringList.add("banana");
+        stringList.add("carrot");
+    }
+
+    @Test
+    public void testSortList() {
+        // Test sorting of integer list
+        List<Integer> sortedIntegerList = ListOperations.sortList(integerList);
+        assertEquals(Arrays.asList(1, 2, 3, 4), sortedIntegerList);
+
+        // Test sorting of string list
+        List<String> sortedStringList = ListOperations.sortList(stringList);
+        assertEquals(Arrays.asList("apple", "banana", "carrot"), sortedStringList);
+
+        // Test sorting of empty list
+        List<String> emptyList = new ArrayList<>();
+        List<String> sortedEmptyList = ListOperations.sortList(emptyList);
+        assertEquals(Collections.emptyList(), sortedEmptyList);
+
+        // Test sorting of null list
+        List<String> nullList = null;
+        List<String> sortedNullList = ListOperations.sortList(nullList);
+        assertEquals(null, sortedNullList);
+    }
+
+    @Test
+    public void testReverseList() {
+        // Test reversal of integer list
+        List<Integer> reversedIntegerList = ListOperations.reverseList(integerList);
+        assertEquals(Arrays.asList(3, 1, 2, 4), reversedIntegerList);
+
+        // Test reversal of string list
+        List<String> reversedStringList = ListOperations.reverseList(stringList);
+        assertEquals(Arrays.asList("carrot", "banana", "apple"), reversedStringList);
+
+        // Test reversal of empty list
+        List<String> emptyList = new ArrayList<>();
+        List<String> reversedEmptyList = ListOperations.reverseList(emptyList);
+        assertEquals(Collections.emptyList(), reversedEmptyList);
+
+        // Test reversal of null list
+        List<String> nullList = null;
+        List<String> reversedNullList = ListOperations.reverseList(nullList);
+        assertEquals(null, reversedNullList);
+    }
+
+    @Test
+    public void testSortListWithMock() {
+        List<Integer> mockedList = mock(List.class);
+        when(mockedList.isEmpty()).thenReturn(false);
+        when(mockedList.size()).thenReturn(3);
+        when(mockedList.get(0)).thenReturn(2);
+        when(mockedList.get(1)).thenReturn(1);
+        when(mockedList.get(2)).thenReturn(3);
+
+        List<Integer> sortedList = ListOperations.sortList(mockedList);
+
+        assertEquals(Arrays.asList(1, 2);
+}
+
+@Service
+public class OrderDetailsService {
+
+    @Autowired
+    private JobLauncher jobLauncher;
+
+    @Autowired
+    private OrderDetailsRepository orderDetailsRepo;
+
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
+
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    @Transactional
+    public void createOrderDetails(List<OrderDetails> orderDetailsList) throws Exception {
+
+        Job job = jobBuilderFactory.get("createOrderDetailsJob")
+                .incrementer(new RunIdIncrementer())
+                .flow(step1(orderDetailsList))
+                .end()
+                .build();
+
+        JobExecution jobExecution = jobLauncher.run(job, new JobParameters());
+        log.info("Job Execution Status : " + jobExecution.getStatus());
+    }
+
+    private Step step1(List<OrderDetails> orderDetailsList) {
+        return stepBuilderFactory.get("createOrderDetailsStep")
+                .<OrderDetails, OrderDetails>chunk(100)
+                .reader(new ListItemReader<>(orderDetailsList))
+                .writer(new OrderDetailsWriter(orderDetailsRepo))
+                .build();
+    }
+
+    private static class OrderDetailsWriter implements ItemWriter<OrderDetails> {
+
+        private final OrderDetailsRepository orderDetailsRepo;
+
+        public OrderDetailsWriter(OrderDetailsRepository orderDetailsRepo) {
+            this.orderDetailsRepo = orderDetailsRepo;
+        }
+
+        @Override
+        public void write(List<? extends OrderDetails> orderDetailsList) throws Exception {
+            orderDetailsRepo.saveAll(orderDetails
+    }
+}
+
+@Transactional
+@Override
+public Order createOrder2(Order orderDTO) {
+    orderDTO.setComments(orderDTO.getComments());
+    Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+    orderDTO.setCustomer(customer);
+    orderDTO.setCustomerNumber(customer.getCustomerNumber());
+    orderRepo.save(orderDTO);
+
+    List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+    List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+    List<Product> products = productService.getlistbyproductCode(pid);
+    log.info("product entity : "+products.toString());
+    Map<Integer, Product> productMap = products.stream()
+            .collect(Collectors.toMap(Product::getProductCode, product -> product));
+
+    JobParameters jobParameters = new JobParametersBuilder()
+            .addLong("time", System.currentTimeMillis())
+            .toJobParameters();
+
+    JobExecution execution = jobLauncher.run(importOrderDetailsJob(), jobParameters);
+    log.info("Job finished with status : " + execution.getStatus());
+
+    log.info("order entity : "+orderDTO.toString());
+    return orderDTO;
+}
+
+@Bean
+public Job importOrderDetailsJob() {
+    return jobBuilderFactory.get("importOrderDetailsJob")
+            .incrementer(new RunIdIncrementer())
+            .start(importOrderDetailsStep())
+            .build();
+}
+
+@Bean
+public Step importOrderDetailsStep() {
+    return stepBuilderFactory.get("importOrderDetailsStep")
+            .<OrderDetails, OrderDetails>chunk(10)
+            .reader(orderDetailsReader())
+            .processor(orderDetailsProcessor())
+            .writer(orderDetailsWriter())
+            .build();
+}
+
+@Bean
+public ItemReader<OrderDetails> orderDetailsReader() {
+    List<OrderDetails> orderDetailsList = new ArrayList<>();
+    for (OrderDetails orderDetailsDTO : orderDTO.getOrderDetails()) {
+        Product product = productMap.get(orderDetailsDTO.getProductCode());
+        if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(orderDTO);
+            orderDetails.setProduct(product);
+            orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetailsList.add(orderDetails);
+            log.info("orderDetails entity : " + orderDetails.toString());
+        } else {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+    }
+    return new ListItemReader<>(orderDetailsList);
+}
+
+@Bean
+public ItemProcessor<OrderDetails, OrderDetails> orderDetailsProcessor() {
+    return orderDetails -> orderDetails;
+}
+
+@Bean
+public ItemWriter<OrderDetails> orderDetailsWriter() {
+    return orderDetails -> orderDetailsRepo.saveAllAndFlush(orderDetails);
+    }
+}
+
+-------------------------------------03/04/2023-------------------------------------
+@Autowired
+private JobBuilderFactory jobBuilderFactory;
+
+@Autowired
+private StepBuilderFactory stepBuilderFactory;
+
+@Autowired
+private OrderDetailsRepository orderDetailsRepo;
+
+@Transactional
+public void createOrderDetails(List<OrderDetails> orderDetailsList) throws Exception {
+
+    Job job = jobBuilderFactory.get("createOrderDetailsJob")
+            .incrementer(new RunIdIncrementer())
+            .flow(step1(orderDetailsList))
+            .end()
+            .build();
+
+    JobExecution jobExecution = jobLauncher.run(job, new JobParameters());
+    log.info("Job Execution Status : " + jobExecution.getStatus());
+}
+
+private Step step1(List<OrderDetails> orderDetailsList) {
+    return stepBuilderFactory.get("createOrderDetailsStep")
+            .<OrderDetails, OrderDetails>chunk(100)
+            .reader(new ListItemReader<>(orderDetailsList))
+            .writer(new OrderDetailsWriter(orderDetailsRepo))
+            .build();
+}
+
+private static class OrderDetailsWriter implements ItemWriter<OrderDetails> {
+
+    private final OrderDetailsRepository orderDetailsRepo;
+
+    public OrderDetailsWriter(OrderDetailsRepository orderDetailsRepo) {
+        this.orderDetailsRepo = orderDetailsRepo;
+    }
+
+    @Override
+    public void write(List<? extends OrderDetails> orderDetailsList) throws Exception {
+        orderDetailsRepo.saveAll(orderDetailsList);
+    }
+}
+---------------------------
+@Autowired
+private OrderDetailsService orderDetailsService;
+
+@Transactional
+@Override
+public Order createOrder2(Order orderDTO) {
+
+    // ... your existing code ...
+
+    List<OrderDetails> orderDetailsList = new ArrayList<>();
+    for (int i = 0; i < orderDetailsDTOList.size(); i++) {
+        OrderDetails orderDetailsDTO = orderDetailsDTOList.get(i);
+        Product product = productMap.get(orderDetailsDTO.getProductCode());
+        if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(orderDTO);
+            orderDetails.setProduct(product);
+            orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetailsList.add(orderDetails);
+            log.info("orderDetails entity : " + orderDetails.toString());
+        } else {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+    }
+
+    orderDetailsService.createOrderDetails(orderDetailsList);
+
+    // ... your existing code ...
+}
+-----------------------------------------------------
+@Service
+public class OrderDetailsService {
+
+    @Autowired
+    private JobLauncher jobLauncher;
+
+    @Autowired
+    private OrderDetailsRepository orderDetailsRepo;
+
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
+
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
+
+    @Transactional
+    public void createOrderDetails(List<OrderDetails> orderDetailsList) throws Exception {
+
+        Job job = jobBuilderFactory.get("createOrderDetailsJob")
+                .incrementer(new RunIdIncrementer())
+                .flow(step1(orderDetailsList))
+                .end()
+                .build();
+
+        JobExecution jobExecution = jobLauncher.run(job, new JobParameters());
+        log.info("Job Execution Status : " + jobExecution.getStatus());
+    }
+
+    private Step step1(List<OrderDetails> orderDetailsList) {
+        return stepBuilderFactory.get("createOrderDetailsStep")
+                .<OrderDetails, OrderDetails>chunk(100)
+                .reader(new ListItemReader<>(orderDetailsList))
+                .writer(new OrderDetailsWriter(orderDetailsRepo))
+                .build();
+    }
+
+    private static class OrderDetailsWriter implements ItemWriter<OrderDetails> {
+
+        private final OrderDetailsRepository orderDetailsRepo;
+
+        public OrderDetailsWriter(OrderDetailsRepository orderDetailsRepo) {
+            this.orderDetailsRepo = orderDetailsRepo;
+        }
+
+        @Override
+        public void write(List<? extends OrderDetails> orderDetailsList) throws Exception {
+            orderDetailsRepo.saveAll(orderDetails
+}
+}
+-------------------------------
+@Transactional
+@Override
+public Order createOrder2(Order orderDTO) {
+    orderDTO.setComments(orderDTO.getComments());
+    Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+    orderDTO.setCustomer(customer);
+    orderDTO.setCustomerNumber(customer.getCustomerNumber());
+    orderRepo.save(orderDTO);
+
+    List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+    List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+    List<Product> products = productService.getlistbyproductCode(pid);
+    log.info("product entity : "+products.toString());
+    Map<Integer, Product> productMap = products.stream()
+            .collect(Collectors.toMap(Product::getProductCode, product -> product));
+
+    JobParameters jobParameters = new JobParametersBuilder()
+            .addLong("time", System.currentTimeMillis())
+            .toJobParameters();
+
+    JobExecution execution = jobLauncher.run(importOrderDetailsJob(), jobParameters);
+    log.info("Job finished with status : " + execution.getStatus());
+
+    log.info("order entity : "+orderDTO.toString());
+    return orderDTO;
+}
+
+@Bean
+public Job importOrderDetailsJob() {
+    return jobBuilderFactory.get("importOrderDetailsJob")
+            .incrementer(new RunIdIncrementer())
+            .start(importOrderDetailsStep())
+            .build();
+}
+
+@Bean
+public Step importOrderDetailsStep() {
+    return stepBuilderFactory.get("importOrderDetailsStep")
+            .<OrderDetails, OrderDetails>chunk(10)
+            .reader(orderDetailsReader())
+            .processor(orderDetailsProcessor())
+            .writer(orderDetailsWriter())
+            .build();
+}
+
+@Bean
+public ItemReader<OrderDetails> orderDetailsReader() {
+    List<OrderDetails> orderDetailsList = new ArrayList<>();
+    for (OrderDetails orderDetailsDTO : orderDTO.getOrderDetails()) {
+        Product product = productMap.get(orderDetailsDTO.getProductCode());
+        if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(orderDTO);
+            orderDetails.setProduct(product);
+            orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetailsList.add(orderDetails);
+            log.info("orderDetails entity : " + orderDetails.toString());
+        } else {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+    }
+    return new ListItemReader<>(orderDetailsList);
+}
+
+@Bean
+public ItemProcessor<OrderDetails, OrderDetails> orderDetailsProcessor() {
+    return orderDetails -> orderDetails;
+}
+
+@Bean
+public ItemWriter<OrderDetails> orderDetailsWriter() {
+    return orderDetails -> orderDetailsRepo.saveAllAndFlush(orderDetails);
+}
+------------------------logstash
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-rest</artifactId>
+</dependency>
+
+<dependency>
+    <groupId>net.logstash.logback</groupId>
+    <artifactId>logstash-logback-encoder</artifactId>
+    <version>6.3</version>
+</dependency>
+
+application.properties
+spring.data.elasticsearch.cluster-name=your-cluster-name
+spring.data.elasticsearch.cluster-nodes=your-elastic-search-server-url
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>your-logstash-server-url:your-logstash-port</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder" />
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="logstash" />
+    </root>
+</configuration>
+
+With this configuration, Logback will write log messages to Logstash, which in turn can forward them to Elasticsearch for
+indexing and analysis. You can then use Kibana to visualize the log data.
+
+logging.config=/path/to/my/logback-config.xml
+--------------------------------
+
+First, you'll need to add the necessary dependencies to your project's build file. Here's an example using Gradle:
+groovy
+Copy code
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    // other dependencies
+}
+Next, you'll need to define a Step that reads your OrderDetails objects, processes them, and writes them to the database.
+Here's an example implementation:
+java
+Copy code
+@Bean
+public Step orderDetailsStep(ItemReader<OrderDetails> orderDetailsReader,
+                             ItemWriter<OrderDetails> orderDetailsWriter) {
+    return stepBuilderFactory.get("orderDetailsStep")
+            .<OrderDetails, OrderDetails>chunk(10)
+            .reader(orderDetailsReader)
+            .processor(orderDetailsProcessor())
+            .writer(orderDetailsWriter)
+            .build();
+}
+This step reads OrderDetails objects in chunks of 10, processes them using a Processor, and writes them to the database using an ItemWriter. You'll need to provide implementations for the ItemReader, Processor, and ItemWriter.
+
+The ItemReader implementation could be something like this:
+java
+Copy code
+@Bean
+public ItemReader<OrderDetails> orderDetailsReader() {
+    List<OrderDetails> orderDetailsList = getOrderDetailsList(); // get the list of OrderDetails from somewhere
+    return new ListItemReader<>(orderDetailsList);
+}
+Here, you're simply providing a list of OrderDetails objects as the input for the reader.
+
+The Processor implementation could be something like this:
+java
+Copy code
+@Bean
+public ItemProcessor<OrderDetails, OrderDetails> orderDetailsProcessor() {
+    return new ItemProcessor<OrderDetails, OrderDetails>() {
+        @Override
+        public OrderDetails process(OrderDetails orderDetails) throws Exception {
+            Product product = getProductByCode(orderDetails.getProductCode()); // get the Product by code
+            if (product.getQuantityInStock() >= orderDetails.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - orderDetails.getQuantityOrdered());
+                orderDetails.setProduct(product);
+                orderDetails.setPriceEach(product.getPrice());
+                return orderDetails;
+            } else {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+        }
+    };
+}
+Here, you're processing each OrderDetails object by retrieving the corresponding Product from the database,
+checking if it's in stock, updating its quantity, and setting the price for the OrderDetails object.
+You're also throwing an exception if the product is out of stock.
+
+The ItemWriter implementation could be something like this:
+java
+Copy code
+@Bean
+public ItemWriter<OrderDetails> orderDetailsWriter(EntityManagerFactory entityManagerFactory) {
+    return new JpaItemWriterBuilder<OrderDetails>()
+            .entityManagerFactory(entityManagerFactory)
+            .build();
+}
+Here, you're using the JpaItemWriter provided by Spring Batch to write the OrderDetails objects to the database.
+You'll need to provide an EntityManagerFactory bean.
+
+Finally, you'll need to define a Job that includes the Step you defined earlier. Here's an example implementation:
+java
+Copy code
+@Bean
+public Job createOrderJob(JobBuilderFactory jobBuilderFactory, Step orderDetailsStep) {
+    return jobBuilderFactory.get("createOrderJob")
+            .incrementer(new RunIdIncrementer())
+            .flow(orderDetailsStep)
+            .end()
+            .build();
+}
+This job includes the `orderDetailsStep
+--------------------------jpa batch insert
+
+@Transactional
+@Override
+public Order createOrder2(Order orderDTO) {
+    orderDTO.setComments(orderDTO.getComments());
+    Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+    orderDTO.setCustomer(customer);
+    orderDTO.setCustomerNumber(customer.getCustomerNumber());
+    orderRepo.save(orderDTO);
+    List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+    List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+    List<Product> products = productService.getlistbyproductCode(pid);
+    log.info("product entity : "+products.toString());
+    Map<Integer, Product> productMap = products.stream()
+            .collect(Collectors.toMap(Product::getProductCode, product -> product));
+    List<OrderDetails> orderDetailsList1 = new ArrayList<>();
+    for (int i = 0; i < orderDetailsDTOList.size(); i++) {
+        OrderDetails orderDetailsDTO = orderDetailsDTOList.get(i);
+        Product product = productMap.get(orderDetailsDTO.getProductCode());
+        if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(orderDTO);
+            orderDetails.setProduct(product);
+            orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetailsList1.add(orderDetails);
+            log.info("orderDetails entity : " + orderDetails.toString());
+        } else {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+    }
+    orderDetailsRepo.saveAllAndFlush(orderDetailsList1);
+    log.info("order entity : "+orderDTO.toString());
+    return orderDTO;
+}
+----------------------------
+
+spring.jpa.properties.hibernate.jdbc.batch_size=100
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+
+@Transactional
+@Override
+public Order createOrder2(Order orderDTO) {
+    orderDTO.setComments(orderDTO.getComments());
+    Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+    orderDTO.setCustomer(customer);
+    orderDTO.setCustomerNumber(customer.getCustomerNumber());
+    orderRepo.save(orderDTO);
+
+    List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+    List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+    List<Product> products = productService.getlistbyproductCode(pid);
+    log.info("product entity : "+products.toString());
+    Map<Integer, Product> productMap = products.stream()
+            .collect(Collectors.toMap(Product::getProductCode, product -> product));
+
+    List<OrderDetails> orderDetailsList1 = new ArrayList<>();
+    for (int i = 0; i < orderDetailsDTOList.size(); i++) {
+        OrderDetails orderDetailsDTO = orderDetailsDTOList.get(i);
+        Product product = productMap.get(orderDetailsDTO.getProductCode());
+        if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setOrder(orderDTO);
+            orderDetails.setProduct(product);
+            orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+            orderDetails.setProductCode(product.getProductCode());
+            orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetailsList1.add(orderDetails);
+            log.info("orderDetails entity : " + orderDetails.toString());
+        } else {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+    }
+    orderDetailsRepo.saveAll(orderDetailsList1);
+    orderDetailsRepo.flush();
+    log.info("order entity : "+orderDTO.toString());
+    return orderDTO;
+}
+

@@ -21,7 +21,6 @@ public class OrderController {
     @Autowired
     private ModelMapper modelMapper;
 
-
     @PostMapping
     public ResponseEntity<?> addOrder(@RequestBody OrderDto orderDto) {
         try {
@@ -34,9 +33,15 @@ public class OrderController {
     @PostMapping("/o")
     public ResponseEntity<OrderDto> addOrder3(@RequestBody  OrderDto orderDto) {
         Order order1 =modelMapper.map(orderDto,Order.class);
-        Order order = orderService.addOrder6(order1);
+        Order order = orderService.createOrder5(order1);
         OrderDto order2 =modelMapper.map(order,OrderDto.class);
             return new ResponseEntity<>(order2,HttpStatus.CREATED);
+    }
+
+    @PostMapping("/o1")
+    public ResponseEntity<Order> addOrder7(@RequestBody  Order order1) {
+        Order order = orderService.createOrder7(order1);
+        return new ResponseEntity<>(order,HttpStatus.CREATED);
     }
 
 

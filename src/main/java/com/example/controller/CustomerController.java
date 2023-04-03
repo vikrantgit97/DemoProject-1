@@ -19,7 +19,7 @@ public class CustomerController {
 
     @GetMapping
     public List<Customer> getAllCustomers() {
-        return customerService.getAllCustomers();
+        return customerService.getCustomerList();
     }
 
     @GetMapping("/{id}")
@@ -33,7 +33,7 @@ public class CustomerController {
 
     @PostMapping
     public ResponseEntity<Customer> addCustomer(@Valid @RequestBody Customer customer) {
-        Customer newCustomer = customerService.addCustomer(customer);
+        Customer newCustomer = customerService. registerCustomer(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCustomer);
     }
 
@@ -43,7 +43,7 @@ public class CustomerController {
         if (!customerNumber.equals(customer.getCustomerNumber())) {
             return ResponseEntity.badRequest().build();
         }
-        Customer updatedCustomer = customerService.updateCustomer(customer);
+        Customer updatedCustomer = customerService.updateCustomerDetail(customerNumber,customer);
         if (updatedCustomer == null) {
             return ResponseEntity.notFound().build();
         }

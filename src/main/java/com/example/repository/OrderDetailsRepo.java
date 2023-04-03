@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OrderDetailsRepo extends JpaRepository<OrderDetails,Integer> {
 
-    @Query(value = "SELECT MAX(id) FROM OrderDetails")
-    public Integer getMaxId();
+//    @Query(value = "SELECT MAX(id) FROM OrderDetails")
+//    public Integer getMaxId();
 }

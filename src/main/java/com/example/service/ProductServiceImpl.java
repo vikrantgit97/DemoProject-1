@@ -1,24 +1,15 @@
 package com.example.service;
 
-import java.lang.reflect.Parameter;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.transaction.Transactional;
-
+import com.example.entity.Product;
+import com.example.exception.ResourceNotFoundException;
+import com.example.repository.ProductRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
-import com.example.entity.Customer;
-import com.example.entity.Product;
-import com.example.exception.ResourceNotFoundException;
-import com.example.repository.ProductRepo;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
 @Slf4j
 @Service
 public class ProductServiceImpl {
@@ -124,11 +115,18 @@ public class ProductServiceImpl {
         }
     }
 
+    public List<Product> findProductByIdInList(List<Integer> productIds) {
+        try {
+            return productRepository.findByProductCodeIn(productIds);
+        } catch (Exception  e) {
+            throw e;
+        }
+    }
 
     public Product updateProductQuantityInStock(Integer productCode,  Integer quantity) {
         Product existingProduct = getProductById(productCode);
         Integer originalQuantityInStock = existingProduct.getQuantityInStock();
-        if ((existingProduct.getQuantityInStock() >= quantity) && (existingProduct != null) &&  (1 <= quantity)) {
+        if ((existingProduct.getQuantityInStock() >= quantity) && (existingProduct != null) &&  (0 < quantity)) {
             Integer updateProductQuantity = existingProduct.getQuantityInStock() - quantity;
             existingProduct.setQuantityInStock(updateProductQuantity);
             return productRepository.save(existingProduct);

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -17,7 +18,9 @@ import javax.validation.constraints.Min;
 public class OrderDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(generator = "abc")
+   // @GenericGenerator(name = "abc", strategy = "increment")
+    @GeneratedValue
     private Integer id;
 
     private Integer orderNumber;
@@ -31,13 +34,15 @@ public class OrderDetails {
     @Min(value = 100, message = "Price each must be at least 100.00")
     private Double priceEach;
 
+    //@Transient
     @ManyToOne
-    //@JoinColumn(name = "fk_orderNumber")
+   // @JoinColumn(name = "fk_orderNumber")
     @JsonBackReference
     private Order order;
 
+   // @Transient
     @JsonIgnore
-    @ManyToOne(targetEntity = Product.class,cascade ={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH,CascadeType.DETACH})
+    @ManyToOne/*(cascade ={CascadeType.PERSIST,CascadeType.MERGE,CascadeType.REFRESH,CascadeType.DETACH})*/
     //@JoinColumn(name = "fk_productCode")      //default join column product_tbl_product_code
     private Product product;
 }

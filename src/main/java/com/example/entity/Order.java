@@ -28,7 +28,7 @@ public class Order {
     // @NotNull(message = "Order date cannot be null")
     private LocalDate orderDate=LocalDate.now();
 
-    private LocalDate shippedDate;
+    private LocalDate shippedDate=LocalDate.now().plusDays(2);
 
     @NotNull(message = "Status cannot be null")
     @Enumerated(EnumType.STRING)
@@ -51,9 +51,9 @@ public class Order {
         log.info("info from order entity ");
     }
 
-    public void setOrderDetails(List<OrderDetails> orderDetails) {
+    /*public void setOrderDetails(List<OrderDetails> orderDetails) {
         this.orderDetails = orderDetails;
-    }
+    }*/
     /*public void addOrderDetails(Integer orderNumber,Integer productCode,Integer quantityOrdered,Double priceEach) {
         OrderDetails newOrderDetails = new OrderDetails();
         newOrderDetails.setOrderNumber(orderNumber);

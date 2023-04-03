@@ -11,45 +11,161 @@ import com.example.repository.CustomerRepo;
 import com.example.repository.OrderDetailsRepo;
 import com.example.repository.OrderRepo;
 import com.example.repository.ProductRepo;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Valid;
+import javax.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
-public class OrderServiceImpl  {
-
-    private final OrderRepo orderRepo;
-    private final OrderDetailsRepo OrderDetailsRepo;
-    private final CustomerRepo customerRepo;
-    private final ProductRepo productRepo;
-    private final ModelMapper modelMapper;
-
+public class OrderServiceImpl {
+    @Autowired
+    private OrderRepo orderRepo;
+    @Autowired
+    private OrderDetailsRepo OrderDetailsRepo;
+    @Autowired
+    private CustomerRepo customerRepo;
+    @Autowired
+    private ProductRepo productRepo;
+    @Autowired
+    private ModelMapper modelMapper;
+    @Autowired
+    private EntityManager entityManager;
     @Autowired
     private ProductServiceImpl productService;
-
     @Autowired
     private CustomerServiceImpl customerService;
+    @Autowired
+    private SessionFactory sessionFactory;
+    @Autowired
+    private OrderDetailsServiceImpl orderDetailsService;
 
-    public List<Order> listOfOrders(){
+    public List<Order> listOfOrders() {
         return orderRepo.findAll();
     }
-    public OrderServiceImpl(OrderRepo orderRepo, OrderDetailsRepo OrderDetailsRepo, CustomerRepo customerRepo, ProductRepo productRepo, ModelMapper modelMapper) {
-        this.orderRepo = orderRepo;
-        this.OrderDetailsRepo = OrderDetailsRepo;
-        this.customerRepo = customerRepo;
-        this.productRepo = productRepo;
-        this.modelMapper = modelMapper;
+
+
+    @Transactional
+    public Order createOrder7(Order order) {
+        order.setComments(order.getComments());
+        Customer customer = customerService.getCustomerById(order.getCustomerNumber());
+        order.setCustomerNumber(customer.getCustomerNumber());
+        order.setCustomer(customer);
+        orderRepo.save(order);
+        List<OrderDetails> orderDetailsDtoList = order.getOrderDetails();
+        // ... your existing code ...
+        List<Integer> pid = orderDetailsDtoList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+        List<Product> products = productService.findProductByIdInList(pid);
+        Map<Integer, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getProductCode, product -> product));
+        List<OrderDetails> orderDetailsList = new ArrayList<>();
+        for (int i = 0; i < orderDetailsDtoList.size(); i++) {
+            OrderDetails orderDetailsDTO = orderDetailsDtoList.get(i);
+            Product product = productMap.get(orderDetailsDTO.getProductCode());
+            if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+                OrderDetails orderDetails = new OrderDetails();
+                orderDetails.setOrder(order);
+                orderDetails.setProduct(product);
+                orderDetails.setOrderNumber(order.getOrderNumber());
+                orderDetails.setProductCode(product.getProductCode());
+                orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+                orderDetails.setPriceEach(product.getPrice());
+                orderDetailsList.add(orderDetails);
+                log.info("orderDetails entity : " + orderDetails.toString());
+            } else {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+        }
+        try {
+            orderDetailsService.createOrderDetails(orderDetailsList);
+        }catch (Exception e){
+            e.printStackTrace();
+            log.error("createOrderDetails");
+        }
+        // ... your existing code ...
+    return orderRepo.save(order);
     }
 
 
-    public ResponseEntity<OrderDto> createOrder(@Valid OrderDto orderDto) {
+    @Transactional
+    public Order createOrder5(Order orderDTO) {
+        orderDTO.setComments(orderDTO.getComments());
+        Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+        orderDTO.setCustomer(customer);
+        orderDTO.setCustomerNumber(customer.getCustomerNumber());
+        orderRepo.save(orderDTO);
+        List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+        List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+        List<Product> products = productService.findProductByIdInList(pid);
+        log.info("product entity : " + products.toString());
+        Map<Integer, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getProductCode, product -> product));
+        String insertQuery = "INSERT INTO order_details (order_number, product_code, quantity_ordered, price_each) VALUES (:orderNumber, :productCode, :quantityOrdered, :priceEach)";
+        Query query = sessionFactory.getCurrentSession().createSQLQuery(insertQuery);
+        for (int i = 0; i < orderDetailsDTOList.size(); i++) {
+            OrderDetails orderDetailsDTO = orderDetailsDTOList.get(i);
+            Product product = productMap.get(orderDetailsDTO.getProductCode());
+            if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+                query.setParameter("orderNumber", orderDTO.getOrderNumber());
+                query.setParameter("productCode", product.getProductCode());
+                query.setParameter("quantityOrdered", orderDetailsDTO.getQuantityOrdered());
+                query.setParameter("priceEach", product.getPrice());
+                query.addQueryHint("o");
+                log.info("orderDetails entity : " + orderDetailsDTOList.toString());
+            } else {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+        }
+        query.executeUpdate();
+        log.info("order entity : " + orderDTO.toString());
+        return orderDTO;
+    }
+
+    public Order createOrd(Order order) {
+        order.setComments(order.getComments());
+        Customer customer = customerService.getCustomerById(order.getCustomerNumber());
+        order.setCustomerNumber(customer.getCustomerNumber());
+        order.setCustomer(customer);
+        orderRepo.save(order);
+        List<OrderDetails> orderDetailsDtoList = order.getOrderDetails();
+        List<Integer> pid = orderDetailsDtoList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+        List<Product> products = productService.findProductByIdInList(pid);
+        Map<Integer, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getProductCode, product -> product));
+        List<OrderDetails> orderDetailsList = orderDetailsDtoList.stream().map(orderDetailsDto -> {
+            Product product = productMap.get(orderDetailsDto.getProductCode());
+            if (product.getQuantityInStock() < orderDetailsDto.getQuantityOrdered()) {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+            product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDto.getQuantityOrdered());
+            // OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+            //OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+            OrderDetails orderDetails = new OrderDetails();
+            orderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetails.setProductCode(product.getProductCode());
+            //orderDetails.setOrder(order);
+            return orderDetails;
+        }).collect(Collectors.toList());
+        OrderDetailsRepo.saveAll(orderDetailsList);
+        orderRepo.save(order);
+        return order;
+    }
+
+
+    public ResponseEntity<OrderDto> createOrder(OrderDto orderDto) {
         Order order = modelMapper.map(orderDto, Order.class);
         order.setComments(orderDto.getComments());
         Customer customer = customerRepo.findById(orderDto.getCustomerNumber())
@@ -57,9 +173,10 @@ public class OrderServiceImpl  {
         order.setCustomerNumber(customer.getCustomerNumber());
         order.setCustomer(customer);
         //order.setCustomerNumber(customer.getCustomerNumber());
-        Order savedOrder = orderRepo.save(order);
+        orderRepo.save(order);
 
         List<OrderDetailsDto> OrderDetailsDtoList = orderDto.getOrderDetails();
+        List<OrderDetails> orderDetailsList1 = new ArrayList<>();
         List<OrderDetails> OrderDetailsList = OrderDetailsDtoList.stream()
                 .map(OrderDetailsDto -> {
                     Product product = productRepo.findById(OrderDetailsDto.getProductCode())
@@ -70,21 +187,21 @@ public class OrderServiceImpl  {
                     product.setQuantityInStock(product.getQuantityInStock() - OrderDetailsDto.getQuantityOrdered());
                     productRepo.save(product);
                     OrderDetails OrderDetails = modelMapper.map(OrderDetailsDto, OrderDetails.class);
-                    OrderDetails.setOrderNumber(product.getProductCode());
-                    OrderDetails.setProductCode(savedOrder.getOrderNumber());
-                    OrderDetails.setOrder(savedOrder);
+                    OrderDetails.setProductCode(product.getProductCode());
+                    OrderDetails.setOrderNumber(order.getOrderNumber());
+                    //OrderDetails.setOrder(order);
                     OrderDetails.setProduct(product);
                     OrderDetails.setQuantityOrdered(OrderDetailsDto.getQuantityOrdered());
                     OrderDetails.setPriceEach(product.getPrice());
-                    return OrderDetailsRepo.save(OrderDetails);
+                    orderDetailsList1.add(OrderDetails);
+                    return OrderDetails;
                 })
                 .collect(Collectors.toList());
-
-        OrderDto savedOrderDto = modelMapper.map(savedOrder, OrderDto.class);
+        OrderDetailsRepo.saveAll(orderDetailsList1);
+        OrderDto savedOrderDto = modelMapper.map(order, OrderDto.class);
         savedOrderDto.setOrderDetails(OrderDetailsList.stream()
                 .map(OrderDetails -> modelMapper.map(OrderDetails, OrderDetailsDto.class))
                 .collect(Collectors.toList()));
-
         return ResponseEntity.ok(savedOrderDto);
     }
 
@@ -119,6 +236,44 @@ public class OrderServiceImpl  {
     }
 
 
+    @Transactional
+    public Order createOrder6(Order orderDTO) {
+        orderDTO.setComments(orderDTO.getComments());
+        Customer customer = customerService.getCustomerById(orderDTO.getCustomerNumber());
+        orderDTO.setCustomer(customer);
+        orderDTO.setCustomerNumber(customer.getCustomerNumber());
+        orderRepo.save(orderDTO);
+        List<OrderDetails> orderDetailsList1 = new ArrayList<>();
+        List<OrderDetails> orderDetailsDTOList = orderDTO.getOrderDetails();
+        List<Integer> pid = orderDetailsDTOList.stream().map(OrderDetails::getProductCode).collect(Collectors.toList());
+        List<Product> products = productService.findProductByIdInList(pid);
+        log.info("product entity : " + products.toString());
+        Map<Integer, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getProductCode, product -> product));
+        for (int i = 0; i < orderDetailsDTOList.size(); i++) {
+            OrderDetails orderDetailsDTO = orderDetailsDTOList.get(i);
+            Product product = productMap.get(orderDetailsDTO.getProductCode());
+            if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+                OrderDetails orderDetails = new OrderDetails();
+                orderDetails.setOrder(orderDTO);
+                orderDetails.setProduct(product);
+                orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+                orderDetails.setProductCode(product.getProductCode());
+                orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+                orderDetails.setPriceEach(product.getPrice());
+                //productService.updateProductQuantityInStock(product.getProductCode(), orderDetailsDTO.getQuantityOrdered());
+                orderDetailsList1.add(orderDetails);      //orderDetailsRepo.save(orderDetails);
+                log.info("orderDetails entity : " + orderDetails.toString());
+            } else {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+        }
+        OrderDetailsRepo.saveAllAndFlush(orderDetailsList1);
+        log.info("order entity : " + orderDTO.toString());
+        return orderDTO;
+    }
+
     public Order addOrder3(Order order) {
         order.setComments(order.getComments());
         Customer customer = customerService.getCustomerById(order.getCustomerNumber());
@@ -146,6 +301,24 @@ public class OrderServiceImpl  {
         OrderDetailsRepo.saveAll(orderDetailsList);
         return orderRepo.save(order1);
     }
+
+
+    @Transactional
+    public List<OrderDetails> saveOrderDetailsInBatch(List<OrderDetails> orderDetailsList) {
+        int batchSize = 50; // set the batch size as per your requirement
+        List<OrderDetails> savedOrderDetailsList = new ArrayList<>();
+        for (int i = 0; i < orderDetailsList.size(); i++) {
+            OrderDetails orderDetails = orderDetailsList.get(i);
+            entityManager.persist(orderDetails);
+            savedOrderDetailsList.add(orderDetails);
+            if (i % batchSize == 0 || i == orderDetailsList.size() - 1) {
+                entityManager.flush();
+                entityManager.clear();
+            }
+        }
+        return savedOrderDetailsList;
+    }
+
 
     public Order createOrder4(Order orderDto) {
         Order order = modelMapper.map(orderDto, Order.class);
@@ -308,7 +481,6 @@ public class OrderServiceImpl  {
             return null;
         }
     }*/
-
 
 
 }

@@ -4,25 +4,140 @@ import com.example.entity.Order;
 import com.example.entity.OrderDetails;
 import com.example.entity.Product;
 import com.example.repository.OrderDetailsRepo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemReader;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.support.ListItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 @Service
 public class OrderDetailsServiceImpl {
 
     @Autowired
-    private OrderDetailsRepo orderDetailsRepository;
+    private JobLauncher jobLauncher;
+
+    @Autowired
+    private OrderDetailsRepo orderDetailsRepo;
+
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
+
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
 
     @Autowired
     private ProductServiceImpl productService;
 
     public List<OrderDetails> getAllOrderDetails() {
-        return orderDetailsRepository.findAll();
+        return orderDetailsRepo.findAll();
     }
 
+    @Transactional
+    @Bean
+    public void createOrderDetails(List<OrderDetails> orderDetailsList) throws Exception {
+
+        Job job = jobBuilderFactory.get("createOrderDetailsJob")
+                .incrementer(new RunIdIncrementer())
+                .flow(step1(orderDetailsList))
+                .end()
+                .build();
+
+        JobExecution jobExecution = jobLauncher.run(job, new JobParameters());
+        log.info("Job Execution Status : " + jobExecution.getStatus());
+    }
+
+    @Bean
+    private Step step1(List<OrderDetails> orderDetailsList) {
+        return stepBuilderFactory.get("createOrderDetailsStep")
+                .<OrderDetails, OrderDetails>chunk(100)
+                .reader(new ListItemReader<>(orderDetailsList))
+                .writer(new OrderDetailsWriter(orderDetailsRepo))
+                .build();
+    }
+
+    private static class OrderDetailsWriter implements ItemWriter<OrderDetails> {
+
+        private final OrderDetailsRepo orderDetailsRepo;
+
+        public OrderDetailsWriter(OrderDetailsRepo orderDetailsRepo) {
+            this.orderDetailsRepo = orderDetailsRepo;
+        }
+
+
+        @Bean
+        public void write(List<? extends OrderDetails> orderDetailsList) throws Exception {
+            orderDetailsRepo.saveAll(orderDetailsList);
+        }
+    }
+
+
+    @Bean
+    public Job importOrderDetailsJob() {
+        return jobBuilderFactory.get("importOrderDetailsJob")
+                .incrementer(new RunIdIncrementer())
+                .start(importOrderDetailsStep())
+                .build();
+    }
+
+    @Bean
+    public Step importOrderDetailsStep() {
+        return stepBuilderFactory.get("importOrderDetailsStep")
+                .<OrderDetails, OrderDetails>chunk(10)
+                .reader(orderDetailsReader())
+                .processor(orderDetailsProcessor())
+                .writer(orderDetailsWriter())
+                .build();
+    }
+
+    @Bean
+    public ItemReader<OrderDetails> orderDetailsReader() {
+        List<OrderDetails> orderDetailsList = new ArrayList<>();
+        for (OrderDetails orderDetailsDTO : orderDTO.getOrderDetails()) {
+            Product product = productMap.get(orderDetailsDTO.getProductCode());
+            if (product.getQuantityInStock() >= orderDetailsDTO.getQuantityOrdered()) {
+                product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDTO.getQuantityOrdered());
+                OrderDetails orderDetails = new OrderDetails();
+                orderDetails.setOrder(orderDTO);
+                orderDetails.setProduct(product);
+                orderDetails.setOrderNumber(orderDTO.getOrderNumber());
+                orderDetails.setProductCode (product.getProductCode());
+                orderDetails.setQuantityOrdered(orderDetailsDTO.getQuantityOrdered());
+                orderDetails.setPriceEach(product.getPrice());
+                orderDetailsList.add(orderDetails);
+                log.info("orderDetails entity : " + orderDetails.toString());
+            } else {
+                throw new IllegalArgumentException("Product is out of stock");
+            }
+        }
+        return new ListItemReader<>(orderDetailsList);
+    }
+
+    @Bean
+    public ItemProcessor<OrderDetails, OrderDetails> orderDetailsProcessor() {
+        return orderDetails -> orderDetails;
+    }
+
+    @Bean
+    public ItemWriter<OrderDetails> orderDetailsWriter() {
+        return orderDetails -> orderDetailsRepo.saveAllAndFlush(orderDetails);
+    }
+
+}
 //    public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {
 //        return orderDetailsRepository.findById(orderNumber).orElse(null);
 //    }
@@ -107,7 +222,7 @@ public class OrderDetailsServiceImpl {
 //        orderDetailRepository.saveAll(entities);
 //    }
     
-}
+
 /*    public OrderDetails createOrderDetails(OrderDetails orderDetails) {
         Product product = productService.getProductById();
         if (product != null && product.getQuantityInStock() >= orderDetails.getQuantityOrdered()) {

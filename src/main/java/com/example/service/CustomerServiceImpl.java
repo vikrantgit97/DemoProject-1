@@ -2,47 +2,80 @@ package com.example.service;
 
 import com.example.entity.Customer;
 import com.example.repository.CustomerRepo;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerServiceImpl {
 
     @Autowired
-    private CustomerRepo customerRepository;
+    private  CustomerRepo iCustomerRepo;
 
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
+    public List<Customer> getCustomerList() {
+        return iCustomerRepo.findAll();
     }
+
+    public Customer updateCustomerDetail(Integer customerNumber, Customer c) {
+
+        Optional<Customer> customer1 = iCustomerRepo.findById(customerNumber);
+
+        if (customer1.isPresent()) {
+            Customer customer = customer1.get();
+            customer.setCustomerFirstName(c.getCustomerFirstName());
+            customer.setCustomerLastName(c.getCustomerLastName());
+            customer.setAddressLine1(c.getAddressLine1());
+            customer.setAddressLine2(c.getAddressLine2());
+            customer.setCity(c.getCity());
+            customer.setCountry(c.getCountry());
+            customer.setPostalCode(c.getPostalCode());
+            customer.setState(c.getState());
+            customer.setPhone(c.getPhone());
+            return iCustomerRepo.save(customer);
+        } else {
+
+            System.out.println("Customer Not Found");
+        }
+
+        return null;
+    }
+
 
     public Customer getCustomerById(Integer customerNumber) {
-        return customerRepository.findById(customerNumber).orElse(null);
+
+        return iCustomerRepo.findById(customerNumber).orElse(null);
+
     }
 
-    public Customer addCustomer(Customer customer) {
-        return customerRepository.save(customer);
+
+    public Customer registerCustomer(Customer customerNumber) {
+
+        return iCustomerRepo.save(customerNumber);
     }
 
-    public Customer updateCustomer(Customer customer) {
-        Customer existingCustomer = getCustomerById(customer.getCustomerNumber());
-        if (existingCustomer == null) {
-            return null;
-        }
-        existingCustomer.setCustomerFirstName(customer.getCustomerFirstName());
-        existingCustomer.setCustomerLastName(customer.getCustomerLastName());
-        existingCustomer.setPhone(customer.getPhone());
-        existingCustomer.setAddressLine1(customer.getAddressLine1());
-        existingCustomer.setAddressLine2(customer.getAddressLine2());
-        existingCustomer.setCity(customer.getCity());
-        existingCustomer.setState(customer.getState());
-        existingCustomer.setPostalCode(customer.getPostalCode());
-        existingCustomer.setCountry(customer.getCountry());
-        return customerRepository.save(existingCustomer);
+
+    public String deleteCustomer(Integer customerNumber) {
+
+        iCustomerRepo.deleteById(customerNumber);
+
+        return "Customer Deleted Successfully";
+
     }
 
-    public void deleteCustomer(Integer customerNumber) {
-        customerRepository.deleteById(customerNumber);
+
+    public Customer findBycustomerFirstName(String customerFirstName) {
+
+        return iCustomerRepo.findBycustomerFirstName(customerFirstName);
     }
+
+
+    public Customer findBycustomerLastName(String customerLasstName) {
+
+        return iCustomerRepo.findBycustomerLastName(customerLasstName);
+    }
+
 }

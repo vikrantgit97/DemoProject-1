@@ -25,5 +25,7 @@ public interface ProductRepo extends JpaRepository<Product,Integer> {
     @Query("SELECT p FROM Product p WHERE p.productCode IN :productCodes")
     List<Product> findByProductCodes(@Param("productCodes") List<Integer> productCodes);
 
+    public List<Product> findByProductCodeIn(List<Integer> collect);
+
     List<Product> findByProductCodeInAndQuantityInStockGreaterThan(List<Integer> productCodes, int quantityInStock);
 }
