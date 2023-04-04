@@ -1439,5 +1439,73 @@ public Order createOrder2(Order orderDTO) {
     orderDetailsRepo.flush();
     log.info("order entity : "+orderDTO.toString());
     return orderDTO;
+
 }
+
+
+-----------------------------------------------------------------04/03/2023
+@Override
+public Order updateOrder(Order order) {
+    Order existingOrder = orderRepo.findById(order.getOrderNumber())
+        .orElseThrow(() -> new IllegalArgumentException("Order does not exist"));
+
+    existingOrder.setComments(order.getComments());
+    Customer customer = customerService.getCustomerById(order.getCustomerNumber());
+    existingOrder.setCustomerNumber(customer.getCustomerNumber());
+    existingOrder.setCustomer(customer);
+
+    List<OrderDetails> existingOrderDetailsList = existingOrder.getOrderDetails();
+    List<OrderDetails> updatedOrderDetailsList = order.getOrderDetails();
+
+    List<Integer> existingProductIds = existingOrderDetailsList.stream()
+        .map(OrderDetails::getProductCode)
+        .collect(Collectors.toList());
+
+    List<Integer> updatedProductIds = updatedOrderDetailsList.stream()
+        .map(OrderDetails::getProductCode)
+        .collect(Collectors.toList());
+
+    List<Integer> allProductIds = new ArrayList<>();
+    allProductIds.addAll(existingProductIds);
+    allProductIds.addAll(updatedProductIds);
+
+    List<Product> products = iProductService.getProductList(allProductIds);
+
+    Map<Integer, Product> productMap = products.stream()
+        .collect(Collectors.toMap(Product::getProductCode, product -> product));
+
+    List<OrderDetails> orderDetailsList = new ArrayList<>();
+    for (OrderDetails orderDetailsDto : updatedOrderDetailsList) {
+        Product product = productMap.get(orderDetailsDto.getProductCode());
+
+        if (product.getQuantityInStock() < orderDetailsDto.getQuantityOrdered()) {
+            throw new IllegalArgumentException("Product is out of stock");
+        }
+        product.setQuantityInStock(product.getQuantityInStock() - orderDetailsDto.getQuantityOrdered());
+
+        OrderDetails existingOrderDetails = existingOrderDetailsList.stream()
+            .filter(d -> d.getProductCode().equals(orderDetailsDto.getProductCode()))
+            .findFirst()
+            .orElse(null);
+
+        if (existingOrderDetails != null) {
+            existingOrderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+            existingOrderDetails.setPriceEach(product.getPrice());
+            orderDetailsList.add(existingOrderDetails);
+        } else {
+            OrderDetails orderDetails = modelMapper.map(orderDetailsDto, OrderDetails.class);
+            orderDetails.setProduct(product);
+            orderDetails.setQuantityOrdered(orderDetailsDto.getQuantityOrdered());
+            orderDetails.setPriceEach(product.getPrice());
+            orderDetails.setOrderNumber(existingOrder.getOrderNumber());
+            orderDetailsList.add(orderDetails);
+        }
+    }
+    existingOrder.setOrderDetails(orderDetailsList);
+
+    detailService.saveAll(orderDetailsList);
+    orderRepo.save(existingOrder);
+    return existingOrder;
+}
+
 
