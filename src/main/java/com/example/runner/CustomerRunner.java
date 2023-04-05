@@ -21,22 +21,21 @@ public class CustomerRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Faker faker = new Faker(new Locale("en-IND"));
-        IntStream.range(0, 10)
-                .mapToObj(i -> {
-                    Customer customer = new Customer();
-                    customer.setCustomerFirstName(faker.name().firstName());
-                    customer.setCustomerLastName(faker.name().lastName());
-                    customer.setPhone(faker.number().numberBetween(1000000000L, 9999999999L));
-                    customer.setAddressLine1(faker.address().streetAddress());
-                    customer.setAddressLine2(faker.address().secondaryAddress());
-                    customer.setCity(faker.address().city());
-                    customer.setState(faker.address().state());
-                    customer.setPostalCode(faker.number().numberBetween(100000, 999999));
-                    customer.setCountry(faker.address().country());
-                    return customer;
-                })
-                .forEach(customerRepo::save);
+        if (customerRepo.count() == 0) {
+            IntStream.range(0, 10).mapToObj(i -> {
+                Customer customer = new Customer();
+                customer.setCustomerFirstName(faker.name().firstName());
+                customer.setCustomerLastName(faker.name().lastName());
+                customer.setPhone(faker.number().numberBetween(1000000000L, 9999999999L));
+                customer.setAddressLine1(faker.address().streetAddress());
+                customer.setAddressLine2(faker.address().secondaryAddress());
+                customer.setCity(faker.address().city());
+                customer.setState(faker.address().state());
+                customer.setPostalCode(faker.number().numberBetween(100000, 999999));
+                customer.setCountry(faker.address().country());
+                return customer;
+            }).forEach(customerRepo::save);
+        }
     }
-
 }
 

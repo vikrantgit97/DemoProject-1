@@ -1,34 +1,12 @@
 package com.example.service;
 
-import com.example.entity.Order;
-import com.example.entity.OrderDetails;
-import com.example.entity.Product;
-import com.example.repository.OrderDetailsRepo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobExecution;
-import org.springframework.batch.core.JobParameters;
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
-import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.support.ListItemReader;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 @Slf4j
 @Service
 public class OrderDetailsServiceImpl {
 
-    @Autowired
+    /*@Autowired
     private JobLauncher jobLauncher;
 
     @Autowired
@@ -135,7 +113,7 @@ public class OrderDetailsServiceImpl {
     @Bean
     public ItemWriter<OrderDetails> orderDetailsWriter() {
         return orderDetails -> orderDetailsRepo.saveAllAndFlush(orderDetails);
-    }
+    }*/
 
 }
 //    public OrderDetails getOrderDetailsByOrderNumber(Integer orderNumber) {

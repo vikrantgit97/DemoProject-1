@@ -20,13 +20,15 @@ public class ProductRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         Faker faker=new Faker(new Locale("en-IND"));
-        for(int i=0;i<10;i++){
-            Product product = new Product();
-            product.setProductName(faker.commerce().productName());
-            product.setProductDescription(faker.lorem().sentence());
-            product.setQuantityInStock(faker.number().numberBetween(1, 100));
-            product.setPrice(faker.number().randomDouble(2, 100, 1000));
-            productRepo.save(product);
+        if (productRepo.count() == 0) {
+            for (int i = 0; i < 10; i++) {
+                Product product = new Product();
+                product.setProductName(faker.commerce().productName());
+                product.setProductDescription(faker.lorem().sentence());
+                product.setQuantityInStock(faker.number().numberBetween(1, 100));
+                product.setPrice(faker.number().randomDouble(2, 100, 1000));
+                productRepo.save(product);
+            }
         }
     }
 }

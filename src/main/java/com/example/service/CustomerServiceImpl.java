@@ -2,8 +2,6 @@ package com.example.service;
 
 import com.example.entity.Customer;
 import com.example.repository.CustomerRepo;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

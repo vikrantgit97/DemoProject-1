@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
-
 import java.util.List;
 import java.util.Map;
 @Slf4j
@@ -22,7 +21,7 @@ public class ProductServiceImpl {
     }
 
     public Product getProductById(Integer productCode) {
-        return productRepository.findById(productCode).orElse(null);
+        return productRepository.findById(productCode).orElseThrow(()-> new ResourceNotFoundException("Id not Found"));
     }
 
     public Product createProduct(Product product) {
@@ -61,7 +60,6 @@ public class ProductServiceImpl {
     public Product partialUpdate(Integer productCode, Map<String, Object> updates) {
         Product product = productRepository.findById(productCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not exist"));
-
         // Use ReflectionUtils to update the product fields with the values in the updates Map
         ReflectionUtils.doWithFields(Product.class, field -> {
             String fieldName = field.getName();
@@ -95,9 +93,7 @@ public class ProductServiceImpl {
     }
 
     public List<Product> searchBy(String theName) {
-
         List<Product> results = null;
-
         if (theName != null && (theName.trim().length() > 0)) {
             results = productRepository.findByProductNameContainsAllIgnoreCase(theName);
         } else {
@@ -116,12 +112,9 @@ public class ProductServiceImpl {
     }
 
     public List<Product> findProductByIdInList(List<Integer> productIds) {
-        try {
             return productRepository.findByProductCodeIn(productIds);
-        } catch (Exception  e) {
-            throw e;
-        }
     }
+
 
     public Product updateProductQuantityInStock(Integer productCode,  Integer quantity) {
         Product existingProduct = getProductById(productCode);

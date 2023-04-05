@@ -32,7 +32,8 @@ public class CustomerModel {
         return customerModel;
     }
 
-    public Customer toEntity() {
+
+    public  Customer toEntity() {
         Customer customer = new Customer();
         customer.setCustomerNumber(this.getCustomerNumber());
         customer.setCustomerFirstName(this.getCustomerFirstName());
@@ -46,5 +47,4 @@ public class CustomerModel {
         customer.setCountry(this.getCountry());
         return customer;
     }
-
 }

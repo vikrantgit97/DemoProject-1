@@ -1508,4 +1508,313 @@ public Order updateOrder(Order order) {
     return existingOrder;
 }
 
+package com.example.exceptions;
+
+public class ColumnNotFoundException extends Exception {
+
+    private static final long serialVersionUID = 1L;
+
+    public ColumnNotFoundException(String message) {
+        super(message);
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        // Suppress the stack trace to improve performance
+        return this;
+    }
+
+    // Optionally, you can override the printStackTrace method to control how the exception is logged
+    // For example, you can use your application's logging framework like Log4j instead of printing to standard error
+    // @Override
+    // public void printStackTrace() {
+    //     Logger logger = LoggerFactory.getLogger(ColumnNotFoundException.class);
+    //     logger.error(this.getMessage(), this);
+    // }
+}
+
+
+
+@RestController
+@RequestMapping("/api/product")
+public class ProductController {
+
+    private final ProductService productService;
+
+    @Autowired
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @PostMapping
+    public ResponseEntity<Object> createProduct(@Valid @RequestBody ProductRequest request) {
+        try {
+            Product product = productService.create(request);
+            return ResponseHelper.respond("SUCCESS", product);
+        } catch (AuthenticationException e) {
+            return ResponseHelper.respond("HTTP_AUTHENTICATION_ERROR", null);
+        } catch (NotFoundHttpException | ModelNotFoundException e) {
+            return ResponseHelper.respond("HTTP_REQUEST_FAILURE", null);
+        } catch (BadRequestException | InvalidProductException e) {
+            return ResponseHelper.respond("DOES_NOT_EXIST", null);
+        } catch (QueryException | Exception e) {
+            return ResponseHelper.respond("QUERY_EXCEPTION", null);
+        } catch (InsufficientStockException | InsufficientProduct e) {
+            return ResponseHelper.respond("INSUFFICIENT_PRODUCT", null);
+        } catch (ProductNotFoundException e) {
+            return ResponseHelper.respond("PRODUCT_NOT_FOUND", null);
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getProduct(@PathVariable int id) {
+        try {
+            Product product = productService.show(id);
+            return ResponseHelper.respond("SUCCESS", product);
+        } catch (AuthenticationException e) {
+            return ResponseHelper.respond("HTTP_AUTHENTICATION_ERROR", null);
+        } catch (NotFoundHttpException | ModelNotFoundException e) {
+            return ResponseHelper.respond("HTTP_REQUEST_FAILURE", null);
+        } catch (BadRequestException | InvalidProductException e) {
+            return ResponseHelper.respond("DOES_NOT_EXIST", null);
+        } catch (QueryException | Exception e) {
+            return ResponseHelper.respond("QUERY_EXCEPTION", null);
+        } catch (InsufficientStockException | InsufficientProduct e) {
+            return ResponseHelper.respond("INSUFFICIENT_PRODUCT", null);
+        } catch (ProductNotFoundException e) {
+            return ResponseHelper.respond("PRODUCT_NOT_FOUND", null);
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Object> updateProductQuantity(@PathVariable int id, @RequestBody UpdateQuantityRequest request) {
+        try {
+            Product product = productService.bookGivenQtyOfAProductForAnOrder(id, request);
+            return ResponseHelper.respond("SUCCESS", product);
+        } catch (AuthenticationException e) {
+            return ResponseHelper.respond("HTTP_AUTHENTICATION_ERROR", null);
+        } catch (NotFoundHttpException | ModelNotFoundException e) {
+            return ResponseHelper.respond("HTTP_REQUEST_FAILURE", null);
+        } catch (BadRequestException | InvalidOrderException e) {
+            return ResponseHelper.respond("DOES_NOT_EXIST", null);
+        } catch (QueryException | Exception e) {
+            return ResponseHelper.respond("QUERY_EXCEPTION", null);
+        } catch (InsufficientStockException | InsufficientProduct e) {
+            return ResponseHelper.respond("INSUFFICIENT_PRODUCT", null);
+        } catch (ProductNotFoundException e) {
+            return ResponseHelper.respond("PRODUCT_NOT_FOUND", null);
+        }
+    }
+}
+
+
+
+package com.example.order;
+
+import com.example.order.exceptions.InvalidOrderException;
+import com.example.order.exceptions.InsufficientStockException;
+import com.example.order.exceptions.ProductOutOfStockException;
+import com.example.order.helpers.ResponseHelper;
+import com.example.order.requests.OrderRequest;
+import com.example.order.requests.ShippedDateRequest;
+import com.example.order.requests.StatusUpdateRequest;
+import com.example.order.services.OrderService;
+import com.example.order.traits.ExceptionHandlerTrait;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    private final OrderService service;
+
+    @Autowired
+    public OrderController(OrderService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> show(@PathVariable int id) {
+        Object data;
+        String code = "SUCCESS";
+        try {
+            data = service.findById(id);
+        } catch (InvalidOrderException e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        } catch (DataAccessException e) {
+            code = "QUERY_EXCEPTION";
+            data = null;
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        }
+        return ResponseHelper.respond(code, data);
+    }
+
+    @PostMapping
+    @Transactional
+    public ResponseEntity<Object> store(@RequestBody @Valid OrderRequest request) {
+        Object data;
+        String code = "SUCCESS";
+        try {
+            data = service.placeOrder(request);
+        } catch (ProductOutOfStockException e) {
+            code = "OUT_OF_STOCK";
+            data = null;
+        } catch (InsufficientStockException e) {
+            code = "INSUFFICIENT_STOCK";
+            data = null;
+        } catch (InvalidOrderException e) {
+            code = "FIELD_ERROR";
+            data = null;
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        }
+        return ResponseHelper.respond(code, data);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Object> update(@PathVariable int id) {
+        return null;
+    }
+
+    @PatchMapping("/update-shipping-date/{id}")
+    public ResponseEntity<Object> updateShippingDate(@PathVariable int id, @RequestBody @Valid ShippedDateRequest request) {
+        Object data;
+        String code = "SUCCESS";
+        try {
+            data = service.updateShippingDate(id, request);
+        } catch (InvalidOrderException e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        } catch (DataAccessException e) {
+            code = "QUERY_EXCEPTION";
+            data = null;
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        }
+        return ResponseHelper.respond(code, data);
+    }
+
+    @PatchMapping("/update-status/{id}")
+    public ResponseEntity<Object> updateStatus(@PathVariable int id, @RequestBody @Valid StatusUpdateRequest request) {
+        Object data;
+        String code = "SUCCESS";
+        try {
+            data = service.updateStatus(id, request);
+        } catch (InvalidOrderException e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        } catch (DataAccessException e) {
+            code = "QUERY_EXCEPTION";
+            data = null;
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+            data = null;
+        }
+        return ResponseHelper.respond(code, data);
+    }
+}
+
+package com.example.demo.customer;
+
+import com.example.demo.helpers.ResponseHelper;
+import com.example.demo.services.CustomerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/api/customers")
+public class CustomerController {
+    private final CustomerService service;
+
+    @Autowired
+    public CustomerController(CustomerService service) {
+        this.service = service;
+    }
+
+    @PostMapping
+    public ResponseEntity<Object> store(@Valid @RequestBody CustomerRequest request) {
+        Object data = null;
+        String code = "SUCCESS";
+
+        try {
+            data = service.create(request);
+        } catch (AuthenticationException e) {
+            code = "HTTP_AUTHENTICATION_ERROR";
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+        }
+
+        return ResponseHelper.respond(code, data);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> show(@PathVariable int id) {
+        Object data = null;
+        String code = "SUCCESS";
+
+        try {
+            data = service.show(id);
+        } catch (CustomerNotFoundException e) {
+            code = "DOES_NOT_EXIST";
+        } catch (AuthenticationException e) {
+            code = "HTTP_AUTHENTICATION_ERROR";
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+        }
+
+        return ResponseHelper.respond(code, data);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> update(@Valid @RequestBody CustomerRequest request, @PathVariable int id) {
+        Object data = null;
+        String code = "SUCCESS";
+
+        try {
+            data = service.update(request, id);
+        } catch (CustomerNotFoundException e) {
+            code = "DOES_NOT_EXIST";
+        } catch (AuthenticationException e) {
+            code = "HTTP_AUTHENTICATION_ERROR";
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+        }
+
+        return ResponseHelper.respond(code, data);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> destroy(@PathVariable int id) {
+        Object data = null;
+        String code = "SUCCESS";
+
+        try {
+            data = service.delete(id);
+        } catch (CustomerNotFoundException e) {
+            code = "DOES_NOT_EXIST";
+        } catch (AuthenticationException e) {
+            code = "HTTP_AUTHENTICATION_ERROR";
+        } catch (Exception e) {
+            code = "DOES_NOT_EXIST";
+        }
+
+        return ResponseHelper.respond(code, data);
+    }
+}
 

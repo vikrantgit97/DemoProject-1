@@ -3,10 +3,8 @@ package com.example.controller;
 import com.example.dto.OrderDto;
 import com.example.entity.Order;
 import com.example.service.OrderServiceImpl;
-import org.modelmapper.MappingException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,35 +20,66 @@ public class OrderController {
     private ModelMapper modelMapper;
 
     @PostMapping
-    public ResponseEntity<?> addOrder(@RequestBody OrderDto orderDto) {
-        try {
-            return new ResponseEntity<>(orderService.createOrder(orderDto),HttpStatus.CREATED);
-        } catch (MappingException | DataAccessException ex) {
-            throw new RuntimeException( ex.getMessage());
-        }
+    public ResponseEntity<Order> addOrder(@RequestBody Order order1) {
+        Order order = orderService.createOrder8(order1);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
     @PostMapping("/o")
-    public ResponseEntity<OrderDto> addOrder3(@RequestBody  OrderDto orderDto) {
-        Order order1 =modelMapper.map(orderDto,Order.class);
-        Order order = orderService.createOrder5(order1);
-        OrderDto order2 =modelMapper.map(order,OrderDto.class);
-            return new ResponseEntity<>(order2,HttpStatus.CREATED);
+    public ResponseEntity<OrderDto> addOrder2(@RequestBody OrderDto orderDto) {
+        Order order1 = modelMapper.map(orderDto, Order.class);
+        Order order = orderService.createOrder8(order1);
+        OrderDto order2 = modelMapper.map(order, OrderDto.class);
+        return new ResponseEntity<>(order2, HttpStatus.CREATED);
     }
 
-    @PostMapping("/o1")
-    public ResponseEntity<Order> addOrder7(@RequestBody  Order order1) {
-        Order order = orderService.createOrder7(order1);
-        return new ResponseEntity<>(order,HttpStatus.CREATED);
+    @PostMapping("o1")
+    public ResponseEntity<Order> addOrder3(@RequestBody Order order1) {
+        Order order = orderService.createOrder6(order1);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 
+    @PostMapping("/o2")
+    public ResponseEntity<OrderDto> addOrder4(@RequestBody OrderDto orderDto) {
+        Order order1 = modelMapper.map(orderDto, Order.class);
+        Order order = orderService.createOrder8(order1);
+        OrderDto order2 = modelMapper.map(order, OrderDto.class);
+        return new ResponseEntity<>(order2, HttpStatus.CREATED);
+    }
+
+    @PostMapping("o3")
+    public ResponseEntity<Order> addOrder5(@RequestBody Order order1) {
+        Order order = orderService.createOrder(order1);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/o4")
+    public ResponseEntity<OrderDto> addOrder6(@RequestBody OrderDto orderDto) {
+        Order order1 = modelMapper.map(orderDto, Order.class);
+        Order order = orderService.createOrder(order1);
+        OrderDto order2 = modelMapper.map(order, OrderDto.class);
+        return new ResponseEntity<>(order2, HttpStatus.CREATED);
+    }
+
+    @PostMapping("o5")
+    public ResponseEntity<Order> addOrder7(@RequestBody Order order1) {
+        Order order = orderService.createOrder1(order1);
+        return new ResponseEntity<>(order, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/o6")
+    public ResponseEntity<OrderDto> addOrder8(@RequestBody OrderDto orderDto) {
+        Order order1 = modelMapper.map(orderDto, Order.class);
+        Order order = orderService.createOrder1(order1);
+        OrderDto order2 = modelMapper.map(order, OrderDto.class);
+        return new ResponseEntity<>(order2, HttpStatus.CREATED);
+    }
 
     @GetMapping
     public ResponseEntity<?> addOrder() {
-            return new ResponseEntity<>(orderService.listOfOrders(),HttpStatus.CREATED);
-
+        return new ResponseEntity<>(orderService.listOfOrders(), HttpStatus.OK);
     }
-
+}
 
 
 
@@ -96,7 +125,7 @@ public class OrderController {
     }*/
 
 
-}
+
 
 
 

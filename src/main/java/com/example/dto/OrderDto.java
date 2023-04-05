@@ -1,28 +1,39 @@
 package com.example.dto;
 
+import com.example.entity.Customer;
 import com.example.enums.Status;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class OrderDto implements Serializable {
+public class OrderDto {
 
     private Integer orderNumber;
-    private LocalDateTime orderDate=LocalDateTime.now();
-    private LocalDateTime shippedDate;
+
+    private LocalDate orderDate;
+
+    private Date shippedDate;
+
     private Status status=Status.ORDERED;
+
     private String comments;
+
+    @JsonIgnore
+    private Customer customer;
+
     private Integer customerNumber;
+
     private List<OrderDetailsDto> orderDetails;
 
-
-
+    public List<OrderDetailsDto> getOrderDetails() {
+        if (orderDetails == null) {
+            orderDetails = new ArrayList<OrderDetailsDto>();
+        }
+        return orderDetails;
+    }
 }
